@@ -26,7 +26,8 @@ setup(
     packages=find_packages(),
     entry_points = {
         'console_scripts': [
-            'read_length_paser=scripts.parse_read_length:read_length_parser'
+            'read_length_parser=scripts.read_length_stats:read_length_parser',
+            'read_length_plotter=scripts.read_length_stats:read_length_plotter'
             ]
     }
 )
