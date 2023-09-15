@@ -22,7 +22,7 @@ setup(
         'Natural Language :: English',
         'Programming Language :: Python :: 3',
     ],
-    #install_requires = ['pytorch==1.13.0', 'pytorch-cuda==11.7', 'ray-all==2.1.0', ' pyyaml==6.0', 'sentencepiece==0.1.95', 'transformers==4.24.0', 'scikit-learn==1.1.3'],
+    install_requires = ["bokeh==3.2.2", "pysam==0.21.0", "click==8.1.7", "pandas==2.1.0"],
     packages=find_packages(),
     entry_points = {
         'console_scripts': [
