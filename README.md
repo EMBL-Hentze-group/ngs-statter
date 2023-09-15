@@ -9,7 +9,7 @@ A package to compute read/alignment statistics per fastq/bam file. This will be 
 - [ ] BAM parser
 
 **Plotting functions**  
-- [ ] Fastq read length distribution plot
+- [x] Fastq read length distribution plot
 - [ ] Overall aligned read length distribution plot
 - [ ] Gene type specific read length distribution plot
 - [ ] Alignment statistics
