@@ -5,8 +5,6 @@ from dataclasses import dataclass
 from functools import partial
 from typing import Callable, Dict, List, Set
 
-from tqdm import tqdm
-
 """
     GFF3 parser
 """
@@ -64,18 +62,8 @@ class GFF3:
         """
         Return gene data
         """
-        with self._reader(self.gff3) as fh, tqdm(
-            total=self._size(), ascii=True, bar_format="{l_bar}{bar:40}{r_bar}"
-        ) as pbar:
-            ll: int = 0
-            for i, l in enumerate(fh):
-                if i == 0:
-                    pbar.update(len(l))
-                elif i % 200 == 0:
-                    pbar.update(ll)
-                    ll = len(l)
-                else:
-                    ll += len(l)
+        with self._reader(self.gff3) as fh:
+            for l in fh:
                 if l[0] == "#":
                     continue
                 ldat: List[str] = l.strip().split("\t")
@@ -105,7 +93,6 @@ class GFF3:
                     self.genes[ldat[0]].append(gene_dat)
                 except KeyError:
                     self.genes[ldat[0]] = [gene_dat]
-            pbar.update(ll)
         if len(self.genes) == 0:
             raise RuntimeError(
                 f"Cannot parse features: {', '.join(self._features)} from {self.gff3}! Check your inputs!"
