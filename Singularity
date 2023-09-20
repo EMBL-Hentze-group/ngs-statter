@@ -17,6 +17,6 @@ IncludeCmd: yes
     statter/* statter/
 %post
     cd statter
-    python setup.py install
+    pip install .
     rm -rf build dist mad_statter.egg-info
     pip cache purge
