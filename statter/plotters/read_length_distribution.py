@@ -8,9 +8,11 @@ from bokeh.layouts import column, row
 from bokeh.models import ColorPicker, Legend
 from bokeh.models.formatters import NumeralTickFormatter
 from bokeh.plotting import figure, save
-
+from bokeh.palettes import Turbo256
+from random import sample
 """
 plot read length distribution after adapter trimming
+@TODO: add vertical line for min. length
 """
 
 
@@ -55,7 +57,8 @@ class ReadLengthPlot:
             height=900,
         )
         legends, col_pickers = list(), list()
-        for sample in sorted(self.read_lens.keys()):
+        colors = sample(Turbo256, len(self.read_lens))
+        for c, sample in enumerate(sorted(self.read_lens.keys())):
             sample_name = re.sub(r"(\_{1,}|\-{1,}|\.{1,})", " ", sample)
             counts = np.zeros(len(read_lengths), dtype=np.int32)
             for i, rl in enumerate(read_lengths):
@@ -64,10 +67,10 @@ class ReadLengthPlot:
                 except KeyError:
                     pass
             line = rl_plot.line(
-                x=read_lengths, y=counts, line_width=2.5, line_alpha=0.8, color="gray"
+                x=read_lengths, y=counts, line_width=2.5, line_alpha=0.8, color=colors[c]
             )
             legends.append((sample_name, [line]))
-            picker = ColorPicker(title=sample_name)
+            picker = ColorPicker(title=sample_name, color = colors[c])
             picker.js_link("color", line.glyph, "line_color")
             col_pickers.append(picker)
         legend = Legend(items=legends, orientation="horizontal", ncols=self.nsamples)
