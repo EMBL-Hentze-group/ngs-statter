@@ -2,7 +2,6 @@ import click
 from typing import List
 from parsers.bam_parser import BamParser
 from parsers.gff_parser import GFF3
-
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
@@ -17,7 +16,8 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
     "--gene_features",
     "gene_features",
     default=["gene", "tRNA"],
-    help="Features to parse from GFF3 file",
+    help="Features to parse from GFF3 file, MUST be supplied as: '--gene_features gene --gene_features tRNA'...",
+    multiple = True,
     show_default=True,
     type=str,
 )
@@ -45,7 +45,7 @@ def gene_read_len_stats(
     gff3: str,
     bam: str,
     out_json: str,
-    gene_features: List[str] = ["gene", "tRNA"],
+    gene_features: List[str],
     min_q: int = 0,
 ) -> None:
     """
@@ -56,4 +56,4 @@ def gene_read_len_stats(
     gff3_parse = GFF3(gff3=gff3, features=gene_features)
     gff3_genes = gff3_parse.parse_gene_info()
     bam_parser = BamParser(bam=bam, min_q=min_q)
-    bam_parser.read_length_stats_per_gene(genes=gff3_genes, out_json=out_json)
+    bam_parser.read_length_stats_per_gene_type(genes=gff3_genes, out_json=out_json)

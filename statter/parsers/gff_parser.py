@@ -62,6 +62,7 @@ class GFF3:
         """
         Return gene data
         """
+        logging.info(f"Parsing {self.gff3}")
         with self._reader(self.gff3) as fh:
             for l in fh:
                 if l[0] == "#":
