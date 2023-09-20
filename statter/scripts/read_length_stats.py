@@ -24,9 +24,7 @@ def read_length_parser(fastq: str, json: str) -> None:
 @click.option(
     "--json_dir", "json_dir", required=True, help="Directory containing json formatted read_length files (see read_length_parser -h)"
 )
-@click.option(
-    "--html", "output_html", required=True, help="Plot output file name"
-)
+@click.option("--pattern","pattern", default = "*.json", help="File naming pattern", show_default = True, type = str)
 @click.option(
     "--nsamples",
     "nsamples",
@@ -35,9 +33,12 @@ def read_length_parser(fastq: str, json: str) -> None:
     show_default=True,
     type=int,
 )
-def read_length_plotter(json_dir: str, output_html: str, nsamples:int = 1)-> None:
+@click.option(
+    "--html", "output_html", required=True, help="Plot output file name"
+)
+def read_length_plotter(json_dir: str, output_html: str, pattern:str, nsamples:int = 1)-> None:
     '''
-    Read in the json formatted files and output html plot
+    Read in  json formatted files and output html plot
     '''
-    rlp = ReadLengthPlot(json_folder=json_dir,output_file=output_html,nsamples=nsamples)
+    rlp = ReadLengthPlot(json_folder=json_dir,output_file=output_html, pattern = pattern,nsamples=nsamples)
     rlp.plot()
