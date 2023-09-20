@@ -5,12 +5,16 @@ A package to compute read/alignment statistics per fastq/bam file. This will be 
 
 **Parsers**  
 - [x] Fastq parser
-- [ ] GFF parser
-- [ ] BAM parser
+- [x] GFF parser
+- [x] BAM parser
 
 **Plotting functions**  
-- [ ] Fastq read length distribution plot
-- [ ] Overall aligned read length distribution plot
-- [ ] Gene type specific read length distribution plot
+- [x] Fastq read length distribution plot (per sample)
+- [x] Overall aligned read length distribution plot (per sample)
+- [x] Gene type specific read length distribution plot (per sample)
 - [ ] Alignment statistics
+
+**documentation**
+- [x] add help
+- [ ] detailed instructions on repo wiki
 
