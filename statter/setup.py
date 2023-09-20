@@ -28,7 +28,8 @@ setup(
         "console_scripts": [
             "read_length_parser=scripts.read_length_stats:read_length_parser",
             "read_length_plotter=scripts.read_length_stats:read_length_plotter",
-            "gene_read_length_stats=scripts.bam_stats:gene_read_len_stats",
+            "gene_type_read_length_parser=scripts.bam_stats:gene_type_read_length_stats",
+            "gene_type_read_length_plotter=scritps.bam_stats:gene_type_length_plotter"
         ]
     },
 )
