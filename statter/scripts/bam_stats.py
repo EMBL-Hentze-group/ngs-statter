@@ -61,7 +61,7 @@ def gene_type_read_length_stats(
 
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.option(
-    "--json_dir", "json_dir", required=True, help="Directory containing json formatted read_length files (see read_length_parser -h)"
+    "--json_dir", "json_dir", required=True, help="Directory containing json formatted read_length files (see gene_type_read_length_parser -h)"
 )
 @click.option("--pattern","pattern", default = "*.json", help="File naming pattern", show_default = True, type = str)
 @click.option(
