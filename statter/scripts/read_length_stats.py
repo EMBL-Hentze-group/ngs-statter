@@ -55,7 +55,11 @@ def read_length_parser(fastq: str, json: str) -> None:
 )
 @click.option("--html", "output_html", required=True, help="Plot output file name")
 def read_length_plotter(
-    json_dir: str, output_html: str, pattern: str, nsamples: int = 1
+    json_dir: str,
+    output_html: str,
+    min_read_length: int,
+    pattern: str,
+    nsamples: int = 1,
 ) -> None:
     """
     Read in  json formatted files and output html plot
