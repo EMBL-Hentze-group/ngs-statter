@@ -10,6 +10,7 @@ from bokeh.models.formatters import NumeralTickFormatter
 from bokeh.plotting import figure, save
 from bokeh.palettes import Turbo256
 import random
+
 """
 plot read length distribution after adapter trimming
 @TODO: add vertical line for min. length
@@ -21,11 +22,13 @@ class ReadLengthPlot:
         self,
         json_folder: str,
         output_file: str,
+        min_read_length: int = 15,
         pattern: str = "*.json",
         nsamples: int = 1,
     ) -> None:
         self.json_folder = json_folder
         self.pattern = pattern
+        self.min_read_length = min_read_length
         self.output_file = output_file
         self.read_lens = {}
         self._get_read_lengths()
@@ -56,6 +59,12 @@ class ReadLengthPlot:
             width=1200,
             height=900,
         )
+        rl_plot.vspan(
+            x=self.min_read_length,
+            line_width=1.5,
+            line_dash="dashed",
+            line_color="#555753",
+        )
         legends, col_pickers = list(), list()
         colors = random.sample(Turbo256, len(self.read_lens))
         for c, sample in enumerate(sorted(self.read_lens.keys())):
@@ -67,10 +76,14 @@ class ReadLengthPlot:
                 except KeyError:
                     pass
             line = rl_plot.line(
-                x=read_lengths, y=counts, line_width=2.5, line_alpha=0.8, color=colors[c]
+                x=read_lengths,
+                y=counts,
+                line_width=2.5,
+                line_alpha=0.8,
+                color=colors[c],
             )
             legends.append((sample_name, [line]))
-            picker = ColorPicker(title=sample_name, color = colors[c])
+            picker = ColorPicker(title=sample_name, color=colors[c])
             picker.js_link("color", line.glyph, "line_color")
             col_pickers.append(picker)
         legend = Legend(items=legends, orientation="horizontal", ncols=self.nsamples)
