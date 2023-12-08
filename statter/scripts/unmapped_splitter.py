@@ -36,8 +36,8 @@ def unmapped_fastq_single_end(
     bam: str, fq_multi: str, fq_other: str, stats: str
 ) -> None:
     """
-    parse single end bam file for unmapped reads
-    split unmapped fastqs into two files: (i) all multimappers (ii) other unmapped reads
+    parse single end bam file for unmapped reads.
+    Split unmapped fastqs into two files: (i) all multimappers (ii) other unmapped reads and
     generate unmapped statistics as json
     """
     unampped_stats = single_end_unmapped_fastq(bam, fq_multi, fq_other)
