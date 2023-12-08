@@ -1,0 +1,34 @@
+[build-system]
+requires = ["maturin>=1.4,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "statter"
+requires-python = ">=3.8"
+dependencies = [
+    "bokeh >= 3.2.2",
+    "click >= 8.1.0",
+    "pandas >= 2.1.0",
+    "pysam >= 0.21.0",
+]
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+]
+dynamic = ["version"]
+
+[project.scripts]
+read_length_parser = "statter.scripts.read_length_stats:read_length_parser"
+read_length_plotter = "statter.scripts.read_length_stats:read_length_plotter"
+gene_type_read_length_parser = "statter.scripts.bam_stats:gene_type_read_length_stats"
+gene_type_read_length_plotter = "statter.scripts.bam_stats:gene_type_length_plotter"
+unmapped_fastq_single_end = "statter.scripts.unmapped_splitter:unmapped_fastq_single_end"
+
+
+[tool.setuptools.packages]
+find = {}
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
+module-name = "statter"
