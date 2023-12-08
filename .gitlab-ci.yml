@@ -1,20 +1,12 @@
-image:
-  name: quay.io/singularity/singularity:v3.11.4
-  entrypoint: [""]
-
-variables:
-  TAG: $CI_COMMIT_SHORT_SHA
-  IMAGE: $CI_REGISTRY_IMAGE:${TAG}
-
-before_script:
-  - if [ -z "$CI_COMMIT_SHORT_SHA" ]; then export TAG=latest; export IMAGE=$CI_REGISTRY_IMAGE:${TAG}; fi
-
 stages:
   - build
 
-  # Build Singularity container and push
-build_n_push:
+build_image:
   stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+
   script:
-    - singularity build container.sif Singularity
-    - singularity push --docker-username "${CI_REGISTRY_USER}" --docker-password "${CI_JOB_TOKEN}" container.sif oras://"${IMAGE}"
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination ${CI_REGISTRY_IMAGE}:$CI_COMMIT_SHORT_SHA
