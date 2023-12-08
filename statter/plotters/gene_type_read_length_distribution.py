@@ -56,10 +56,10 @@ class GeneTypePlot:
                     read_length_cds.append((read_lengths, counts))
                     nskipped += 1
                     continue
-                for i, rl in enumerate(read_lengths):
+                for k, rl in enumerate(read_lengths):
                     if not rl in _tmp_data_dict[sample][gene_type]:
                         continue
-                    counts[i] = _tmp_data_dict[sample][gene_type][rl]
+                    counts[k] = _tmp_data_dict[sample][gene_type][rl]
 
                 read_length_cds.append((read_lengths, counts))
                 sample_lib_sizes[i] = sum(counts)

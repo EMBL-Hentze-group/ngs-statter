@@ -5,7 +5,7 @@ from typing import Dict, List
 import logging
 
 import pysam
-from parsers.gff_parser import Gene
+from statter.parsers.gff_parser import Gene
 
 
 class BamParser:

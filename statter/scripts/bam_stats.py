@@ -1,8 +1,8 @@
 import click
 from typing import List
-from parsers.bam_parser import BamParser
-from parsers.gff_parser import GFF3
-from plotters.gene_type_read_length_distribution import GeneTypePlot
+from statter.parsers.bam_parser import BamParser
+from statter.parsers.gff_parser import GFF3
+from statter.plotters.gene_type_read_length_distribution import GeneTypePlot
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 

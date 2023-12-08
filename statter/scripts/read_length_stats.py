@@ -1,5 +1,5 @@
-from parsers.fastq_stats import FqLength
-from plotters.read_length_distribution import ReadLengthPlot
+from statter.parsers.fastq_stats import FqLength
+from statter.plotters.read_length_distribution import ReadLengthPlot
 import click
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
