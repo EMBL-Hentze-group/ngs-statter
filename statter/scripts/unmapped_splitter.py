@@ -40,7 +40,9 @@ def unmapped_fastq_single_end(
     Split unmapped fastqs into two files: (i) all multimappers (ii) other unmapped reads and
     generate unmapped statistics as json
     """
-    unampped_stats = single_end_unmapped_fastq(bam, fq_multi, fq_other)
+    unmapped_json = {}
+    for k, v in single_end_unmapped_fastq(bam, fq_multi, fq_other).items():
+        unmapped_json[k] = {"count": v.count, "seq_lens": v.seqlens}
     # if Path(stats).exists()
     with open(stats, "w") as jh:
-        json.dump(unampped_stats, jh)
+        json.dump(unmapped_json, jh)

@@ -1,12 +1,13 @@
 use pyo3::prelude::*;
 use std::collections::HashMap;
+use unmapped::Unmapped;
 mod unmapped;
 
 /// parse single end bam file and
 /// split unmapped fastqs into two files: (i) all multimappers (ii) other unmapped reads
 /// generate unmapped statistics as json
 #[pyfunction]
-fn single_end_unmapped_fastq(bam: &str, fq_multi: &str, fq_other: &str) -> HashMap<String, u32>{
+fn single_end_unmapped_fastq(bam: &str, fq_multi: &str, fq_other: &str) -> HashMap<String, Unmapped>{
     let unmapped_stat = unmapped::unmapped_writer_single_end(bam, fq_multi, fq_other);
     unmapped_stat
 }

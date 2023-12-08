@@ -5,6 +5,7 @@ use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::Path;
+use pyo3::prelude::*;
 
 // fastq writer either plain file or gz compressed
 // Use the presence of .gz suffix to decide
@@ -46,16 +47,36 @@ fn unmapped_kind(ut: &char) -> String {
     }
 }
 
+//store unmapped kind stats
+#[pyclass]
+#[derive(Default, Debug)]
+pub struct Unmapped {
+    #[pyo3(get)]
+    count: u32,
+    #[pyo3(get)]
+    seqlens: HashMap<u32, u32>,
+}
+
+impl Unmapped {
+    fn update(&mut self, falen: u32) {
+        self.count += 1;
+        self.seqlens
+            .entry(falen)
+            .and_modify(|e| *e += 1)
+            .or_insert(1);
+    }
+}
+
 // parse bam file from single end data
 // split unmapped reads into two fastq files:  multimappers and all others
-pub fn unmapped_writer_single_end(bam: &str, fq_multi: &str, fq_other: &str) -> HashMap<String, u32> {
+pub fn unmapped_writer_single_end(bam: &str, fq_multi: &str, fq_other: &str) -> HashMap<String, Unmapped> {
     let mut bam = match bam::Reader::from_path(bam) {
         Ok(bam) => bam,
         Err(e) => panic!("Cannot read {}:{}", bam, e.to_string()),
     };
     let mut multi_writer = fq_writer(fq_multi);
     let mut other_writer = fq_writer(fq_other);
-    let mut unmapped_stats: HashMap<String, u32> = HashMap::new();
+    let mut unmapped_stats: HashMap<String, Unmapped> = HashMap::new();
     for aln in bam.records() {
         let rc = match aln {
             Ok(rc) => rc,
@@ -86,10 +107,8 @@ pub fn unmapped_writer_single_end(bam: &str, fq_multi: &str, fq_other: &str) -> 
         } else {
             other_writer.write_all(&fq).unwrap();
         }
-        unmapped_stats
-            .entry(unmapped_kind(&ut))
-            .and_modify(|e| *e += 1)
-            .or_insert(1);
+        let unmap_kind_stat: &mut Unmapped = unmapped_stats.entry(unmapped_kind(&ut)).or_default();
+        unmap_kind_stat.update(u32::try_from(rc.seq().len()).unwrap());
     }
     unmapped_stats
 }
