@@ -1,11 +1,11 @@
 use flate2::{write, Compression};
+use pyo3::prelude::*;
 use rust_htslib::{bam, bam::record::Aux, bam::Read};
 use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::Path;
-use pyo3::prelude::*;
 
 // fastq writer either plain file or gz compressed
 // Use the presence of .gz suffix to decide
@@ -69,7 +69,11 @@ impl Unmapped {
 
 // parse bam file from single end data
 // split unmapped reads into two fastq files:  multimappers and all others
-pub fn unmapped_writer_single_end(bam: &str, fq_multi: &str, fq_other: &str) -> HashMap<String, Unmapped> {
+pub fn unmapped_writer_single_end(
+    bam: &str,
+    fq_multi: &str,
+    fq_other: &str,
+) -> HashMap<String, Unmapped> {
     let mut bam = match bam::Reader::from_path(bam) {
         Ok(bam) => bam,
         Err(e) => panic!("Cannot read {}:{}", bam, e.to_string()),
@@ -93,15 +97,18 @@ pub fn unmapped_writer_single_end(bam: &str, fq_multi: &str, fq_other: &str) -> 
             },
             Err(_) => continue,
         };
-        let mut fq: Vec<u8> = Vec::new();
-        fq.push(64); // @
-        fq.extend(rc.qname()); // read id
-        fq.push(10); // \n
-        fq.extend(rc.seq().as_bytes()); // read sequence
-        fq.extend(vec![10, 43, 10]); // \n+\n
-        let qual: Vec<u8> = rc.qual().into_iter().map(|q| q + 33).collect();
-        fq.extend(qual); // PHRED score
-        fq.push(10); // new line
+        let fq: Vec<u8> = vec![
+            vec![64],                                        // @
+            rc.qname().to_vec(),                             // read id
+            vec![10],                                        // \n
+            rc.seq().as_bytes(),                             // read sequence
+            vec![10, 43, 10],                                // \n+\n
+            rc.qual().into_iter().map(|q| q + 33).collect(), // PHRED score
+            vec![10],                                        // \n
+        ]
+        .into_iter()
+        .flatten()
+        .collect();
         if ut == '3' {
             multi_writer.write_all(&fq).unwrap();
         } else {
