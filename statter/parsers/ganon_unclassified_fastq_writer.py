@@ -99,7 +99,7 @@ class GanonUnclassifiedFq:
                     continue
                 header = seq[0].decode("utf-8").strip()
                 header_id = header[1:].split(" ")
-                if (header[0] != "@") or (header_id not in self.fastq_unc_ids):
+                if (header[0] != "@") or (header_id[0] not in self.fastq_unc_ids):
                     continue
                 fwriter.write(b"".join(seq))
                 seq_len = len(seq[1].decode("utf-8").strip())
