@@ -1,11 +1,10 @@
 import gzip
 import logging
-import re
 from functools import partial
 from io import BufferedReader
 from itertools import islice
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Callable
 import json
 
 """
@@ -18,9 +17,7 @@ class FqLength:
     Parse a given fastq file and write length stats to a tsv file
     """
 
-    def __init__(
-        self, fq: str, out_file: str
-    ) -> None:
+    def __init__(self, fq: str, out_file: str) -> None:
         """
         fq: /path/to/fastq.file, either plain text or gzipped
         out_file: /path/to/stats.csv file
@@ -69,4 +66,3 @@ class FqLength:
         with open(self.out_file, "w") as wh:
             # sort and dump read length dictionary
             json.dump(dict(sorted(self._read_len_stats.items())), wh)
-            
