@@ -26,7 +26,7 @@ write unclassified reads read length distribution to json
     type=click.Path(exists=True, file_okay=True, dir_okay=False),
 )
 @click.option(
-    "--unclassifed",
+    "--unclassified",
     "target_fastq",
     required=True,
     help="File name to write ganon unclassified reads in fastq format (supports .gz files)",
