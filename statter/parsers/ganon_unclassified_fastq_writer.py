@@ -117,4 +117,4 @@ class GanonUnclassifiedFq:
         if Path(self.read_length_json).exists():
             logger.warning(f"Re-writing {self.read_length_json}")
         with open(self.read_length_json, "w") as jh:
-            json.dump(self.read_length_json, jh)
+            json.dump(self._read_lengths, jh)
