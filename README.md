@@ -10,7 +10,6 @@ A package to compute read/alignment statistics per fastq/bam file and parsers fo
 - [x] single end unmapped fastq parser
 - [ ] paired end unmapped fastq parser
 - [x] [ganon](https://pirovc.github.io/ganon/) unclassified single end reads parser
-- [x] [MMseqs2](https://github.com/soedinglab/MMseqs2) cluster results parser and motif 
 
 **Plotting functions**  
 - [x] Fastq read length distribution plot
@@ -18,6 +17,7 @@ A package to compute read/alignment statistics per fastq/bam file and parsers fo
 - [x] Gene type specific read length distribution plot
 - [ ] Alignment statistics
 - [x] Motif logos from MMseqs2 clusters
+- [x] Ganon contamination and unclassified read length distribution plot
 
 ## How to pull the container image from this repo
 
