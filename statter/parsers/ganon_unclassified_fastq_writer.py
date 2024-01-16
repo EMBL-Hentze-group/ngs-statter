@@ -1,6 +1,7 @@
 import gzip
 import json
 import logging
+from collections import defaultdict
 from functools import partial
 from io import BufferedReader
 from itertools import islice
@@ -34,7 +35,7 @@ class GanonUnclassifiedFq:
         self.read_length_json = read_length_json
         self.fastq_unc_ids = set()  # unclassified fastq ids
         self._unc_reader()
-        self._read_lengths = {}  # read length dictionary
+        self._read_lengths = defaultdict(dict)  # read length dictionary
 
     def _unc_reader(self) -> None:
         """
@@ -98,16 +99,29 @@ class GanonUnclassifiedFq:
                 elif len(seq) < 4:
                     continue
                 header = seq[0].decode("utf-8").strip()
+                read_length = len(seq[1].decode("utf-8").strip())
                 header_id = header[1:].split(" ")
-                if (header[0] != "@") or (header_id[0] not in self.fastq_unc_ids):
+                if header[0] != "@":
                     continue
+                elif header_id[0] not in self.fastq_unc_ids:
+                    self._add_read_length_count("contamination", read_length)
+                    continue
+                self._add_read_length_count("unclassified", read_length)
                 fwriter.write(b"".join(seq))
-                seq_len = len(seq[1].decode("utf-8").strip())
-                try:
-                    self._read_lengths[seq_len] += 1
-                except KeyError:
-                    self._read_lengths[seq_len] = 1
         self._write_read_length_json()
+
+    def _add_read_length_count(self, read_type: str, read_length: int) -> None:
+        """
+        Helper function
+        add read length count
+        Arguments:
+            read_type: string, either "contamination" or "unclassified"
+            read_length: int, read length
+        """
+        try:
+            self._read_lengths[read_type][read_length] += 1
+        except KeyError:
+            self._read_lengths[read_type][read_length] = 1
 
     def _write_read_length_json(self):
         """
