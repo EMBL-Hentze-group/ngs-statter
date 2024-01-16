@@ -26,6 +26,7 @@ gene_type_read_length_parser = "statter.scripts.bam_stats:gene_type_read_length_
 gene_type_read_length_plotter = "statter.scripts.bam_stats:gene_type_length_plotter"
 unmapped_fastq_single_end = "statter.scripts.unmapped_splitter:unmapped_fastq_single_end"
 ganon_unc_to_fastq = "statter.scripts.ganon_unclassified_to_fastq:unclassifed_read_parser"
+ganon_read_length_plotter = "statter.scripts.ganon_unclassified_to_fastq:ganon_read_length_plotter"
 
 [tool.setuptools.packages]
 find = {}
