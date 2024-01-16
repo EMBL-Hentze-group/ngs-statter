@@ -188,12 +188,3 @@ class GanonReadLengthPlot:
                 filename=self.output_file,
                 title="Gene type read length distribution",
             )
-
-
-grlp = GanonReadLengthPlot(
-    "/workspaces/mad_statter/test_data/",
-    "/workspaces/mad_statter/test_data/test_output.html",
-    "*read_length.json",
-)
-
-grlp.plot()
