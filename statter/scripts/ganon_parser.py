@@ -1,6 +1,7 @@
 import click
 
 from statter.parsers.ganon_unclassified_fastq_writer import GanonUnclassifiedFq
+from statter.parsers.ganon_abundance_parser import GanonTreParser
 from statter.plotters.ganon_contamination_vs_unclassified_read_length_distribution import (
     GanonReadLengthPlot,
 )
@@ -86,6 +87,9 @@ def unclassifed_read_parser(
 def ganon_read_length_plotter(
     json_dir: str, output_html: str, pattern: str = "*.json", nsamples: int = 1
 ) -> None:
+    """
+    Plot read lengths after ganon classification using json formatted read length distribution files
+    """
     grlp = GanonReadLengthPlot(
         json_folder=json_dir,
         output_file=output_html,
@@ -93,3 +97,42 @@ def ganon_read_length_plotter(
         nsamples=nsamples,
     )
     grlp.plot()
+
+
+@click.command(context_settings=CONTEXT_SETTINGS)
+@click.option(
+    "--result_dir",
+    "ganon_result_dir",
+    required=True,
+    help="Directory containing ganon species abundance estimation files (*.tre) after ganon classification",
+    type=click.Path(exists=True, file_okay=False, dir_okay=True),
+)
+@click.option(
+    "--pattern",
+    "pattern",
+    default="*.json",
+    help="File naming pattern",
+    show_default=True,
+    type=str,
+)
+@click.option(
+    "--out",
+    "output_csv",
+    required=True,
+    help="Output csv file name",
+    type=click.Path(exists=False),
+)
+def ganon_abundance_aggregator(
+    ganon_result_dir: str,
+    output_csv: str,
+    pattern: str = "*.tre",
+) -> None:
+    """
+    collect ganon report (*.tre) files and aggregate results across multiple samples
+    """
+    gtp = GanonTreParser(
+        result_folder=ganon_result_dir,
+        output_file=output_csv,
+        pattern=pattern,
+    )
+    gtp.aggregate_results()

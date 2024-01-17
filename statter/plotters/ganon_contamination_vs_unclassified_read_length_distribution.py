@@ -69,6 +69,11 @@ class GanonReadLengthPlot:
                 list(map(lambda r: int(r), read_dat["unclassified"]))
             )
             _json_dict[sample] = read_dat
+        if len(_json_dict) == 0:
+            raise RuntimeError(
+                f"Cannot find files with pattern {self.pattern} in folder {self.json_folder}!"
+            )
+        logging.info(f"Found {len(_json_dict)} samples")
         for sample, read_len_dist in _json_dict.items():
             contamination = np.zeros((len(self._read_lengths)), dtype=np.uint32)
             unclassified = np.zeros_like(contamination)
@@ -153,8 +158,6 @@ class GanonReadLengthPlot:
         rl_plot.yaxis.axis_label_text_font_style = "bold"
         # add comma to counts on Y axis
         rl_plot.yaxis.formatter = NumeralTickFormatter(format="0,0")
-        print(sample_names)
-        print(line_renders)
         # checkbox
         checkbox = CheckboxGroup(
             labels=sample_names, active=[i for i in range(len(sample_names))]
