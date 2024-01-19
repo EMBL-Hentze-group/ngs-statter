@@ -183,11 +183,11 @@ class GanonReadLengthPlot:
             save(
                 row(rl_plot, column(column(*col_picks), checkbox)),
                 filename=self.output_file,
-                title="Gene type read length distribution",
+                title="Contamination vs unclassified read length distribution",
             )
         else:
             save(
                 row(rl_plot, column(column(*color_pickers), checkbox)),
                 filename=self.output_file,
-                title="Gene type read length distribution",
+                title="Contamination vs unclassified read length distribution",
             )
