@@ -10,7 +10,8 @@ dependencies = [
     "click >= 8.1.0",
     "pandas >= 2.1.0",
     "pysam >= 0.21.0",
-    "jsonschema >= 4.20.0"
+    "jsonschema >= 4.20.0",
+    "networkx >= 3.0"
 ]
 classifiers = [
     "Programming Language :: Rust",
@@ -28,6 +29,8 @@ unmapped_fastq_single_end = "statter.scripts.unmapped_splitter:unmapped_fastq_si
 ganon_unc_to_fastq = "statter.scripts.ganon_parser:unclassifed_read_parser"
 ganon_read_length_plotter = "statter.scripts.ganon_parser:ganon_read_length_plotter"
 ganon_abundance_aggregator = "statter.scripts.ganon_parser:ganon_abundance_aggregator"
+kraken_report_aggregator = "statter.scripts.kraken_parser:kraken_report_aggregator"
+
 
 [tool.setuptools.packages]
 find = {}
