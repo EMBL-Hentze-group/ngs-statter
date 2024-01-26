@@ -1,5 +1,4 @@
 import logging
-from math import prod
 from pathlib import Path
 from collections import OrderedDict
 from itertools import chain, product
