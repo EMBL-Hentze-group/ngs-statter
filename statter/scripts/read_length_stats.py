@@ -1,5 +1,6 @@
 from statter.parsers.fastq_stats import FqLength
 from statter.plotters.read_length_distribution import ReadLengthPlot
+from statter.parsers.fastp_json_parser import Fastp
 import click
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -72,3 +73,49 @@ def read_length_plotter(
         nsamples=nsamples,
     )
     rlp.plot()
+
+
+@click.command(context_settings=CONTEXT_SETTINGS)
+@click.option(
+    "--json_dir",
+    "trim_dir",
+    required=True,
+    type=click.Path(exists=True, file_okay=False, dir_okay=True),
+    help="Directory containing json formatted trimming stats from fastp (see fastp -h)",
+)
+@click.option(
+    "--out_csv",
+    "out_csv",
+    required=True,
+    type=click.Path(exists=False),
+    help="File name for aggregated output file",
+)
+@click.option(
+    "--first_trim_pattern",
+    "first_trim_pattern",
+    default="*first_trim.json",
+    help="File naming pattern for stats from first trimming",
+    show_default=True,
+    type=str,
+)
+@click.option(
+    "--second_trim_pattern",
+    "second_trim_pattern",
+    default="*second_trim.json",
+    help="File naming pattern for stats from second trimming",
+    show_default=True,
+    type=str,
+)
+def fastp_stats_aggregator(
+    trim_dir: str, out_csv: str, first_trim_pattern: str, second_trim_pattern: str
+) -> None:
+    """
+    collect trimming stats from fastp json formatted files for data after first and second trim and aggregate trimming stats into one single file
+    """
+    fp = Fastp(
+        trim_dir=trim_dir,
+        out_csv=out_csv,
+        first_trim_pattern=first_trim_pattern,
+        second_trim_pattern=second_trim_pattern,
+    )
+    fp.collect_trimming_stats()

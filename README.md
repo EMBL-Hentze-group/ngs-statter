@@ -11,6 +11,7 @@ A package to compute read/alignment statistics per fastq/bam file and parsers fo
 - [ ] paired end unmapped fastq parser
 - [x] [ganon](https://pirovc.github.io/ganon/) unclassified single end reads parser
 - [x] [kraken2](https://github.com/DerrickWood/kraken2/blob/master/docs/MANUAL.markdown) report aggregator
+- [x] [fastp](https://github.com/OpenGene/fastp) fastp trimming stats aggregator
 
 **Plotting functions**  
 - [x] Fastq read length distribution plot
@@ -45,4 +46,5 @@ $ ls -alh
 - ganon_unc_to_fastq: given a ganon classification file and corresponding fastq file, create a new fastq file with all ganon unclassified reads
 - ganon_read_length_plotter: for ganon classification result plot contamination vs unclassified read length distribution
 - ganon_abundance_aggregator: aggregate ganon classification report from multiple samples into a single file
+- fastp_stats_aggregator: aggregate trimming stats after fastp trimming
 

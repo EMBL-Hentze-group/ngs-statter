@@ -46,8 +46,7 @@ def kraken_report_aggregator(
     nodes: str, names: str, kraken_dir: str, pattern: str, output_csv: str
 ):
     """
-    Aggregate Kraken2 species classification report
-    Given NCBI taxonomy database nodes.dmp file names.dmp file, a directory with Kraken2 classification results
+    Aggregate Kraken2 species classification report. Given NCBI taxonomy database nodes.dmp file names.dmp file, a directory with Kraken2 classification results
     aggregate all classification results into one file
     """
     tax = Taxonomy(nodes=nodes, names=names)
