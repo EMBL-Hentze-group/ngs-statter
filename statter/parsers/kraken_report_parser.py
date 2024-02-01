@@ -84,13 +84,14 @@ class Kraken2:
                 self._sample_names, ["cumulative", "cumulative-%", "single"]
             )
         ]
-        header = "\t".join(["taxonomy_id", "name", "rank"] + snames)
+        header = "\t".join(["order_id", "taxonomy_id", "name", "rank"] + snames)
+        order_count = 0  # column to sort back into taxonomy order
         with open(self.output_file, "w") as wh:
             wh.write(f"{header}\n")
             try:
                 unclassified = self._kraken_report["0"]
                 out_str = "\t".join(
-                    ["unclassified", "no rank", "unclassified"]
+                    [f"{order_count}", "unclassified", "0", "no rank", "unclassified"]
                     + list(chain(*unclassified))
                 )
                 wh.write(f"{out_str}\n")
@@ -99,11 +100,13 @@ class Kraken2:
                     f"Cannot find 'unclassified' read data in Kraken reports!"
                 )
                 pass
+            order_count += 1
             for idx in dfs_postorder_nodes(self.taxonomy):
                 if idx not in self._kraken_report:
                     continue
                 out_str = "\t".join(
                     [
+                        f"{order_count}",
                         idx,
                         self.taxonomy.nodes[idx]["name"],
                         self.taxonomy.nodes[idx]["rank"],
@@ -111,3 +114,4 @@ class Kraken2:
                     + list(chain(*self._kraken_report[idx]))
                 )
                 wh.write(f"{out_str}\n")
+                order_count += 1
