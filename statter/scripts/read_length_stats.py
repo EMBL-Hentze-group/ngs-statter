@@ -54,12 +54,21 @@ def read_length_parser(fastq: str, json: str) -> None:
     show_default=True,
     type=int,
 )
+@click.option(
+    "--title",
+    "title",
+    default="Read length distribution after adapter trimming",
+    help="Plot title",
+    show_default=True,
+    type=str,
+)
 @click.option("--html", "output_html", required=True, help="Plot output file name")
 def read_length_plotter(
     json_dir: str,
     output_html: str,
     min_read_length: int,
     pattern: str,
+    title: str,
     nsamples: int = 1,
 ) -> None:
     """
@@ -70,6 +79,7 @@ def read_length_plotter(
         output_file=output_html,
         min_read_length=min_read_length,
         pattern=pattern,
+        title=title,
         nsamples=nsamples,
     )
     rlp.plot()
