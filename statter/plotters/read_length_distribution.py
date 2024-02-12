@@ -24,6 +24,7 @@ class ReadLengthPlot:
         output_file: str,
         min_read_length: int = 15,
         pattern: str = "*.json",
+        title: str = "Read length distribution after adapter trimming",
         nsamples: int = 1,
     ) -> None:
         self.json_folder = json_folder
@@ -32,6 +33,7 @@ class ReadLengthPlot:
         self.output_file = output_file
         self.read_lens = {}
         self._get_read_lengths()
+        self.title = title
         self.nsamples = nsamples
 
     def _get_read_lengths(self) -> None:
@@ -53,18 +55,19 @@ class ReadLengthPlot:
             read_lengths.update(dat.keys())
         read_lengths = sorted([int(r) for r in read_lengths])
         rl_plot = figure(
-            title="Read length distribution after adapter trimming",
+            title=self.title,
             x_axis_label="Read lengths",
             y_axis_label="Counts",
             width=1200,
             height=900,
         )
-        rl_plot.vspan(
-            x=self.min_read_length,
-            line_width=1.5,
-            line_dash="dashed",
-            line_color="#555753",
-        )
+        if self.min_read_length > 0:
+            rl_plot.vspan(
+                x=self.min_read_length,
+                line_width=1.5,
+                line_dash="dashed",
+                line_color="#555753",
+            )
         legends, col_pickers = list(), list()
         colors = random.sample(Turbo256, len(self.read_lens))
         for c, sample in enumerate(sorted(self.read_lens.keys())):
