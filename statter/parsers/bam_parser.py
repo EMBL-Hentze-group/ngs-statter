@@ -13,9 +13,18 @@ class BamParser:
     Parse bam file for data
     """
 
-    def __init__(self, bam: str, min_q: int = 0) -> None:
+    def __init__(
+        self, bam: str, min_q: int = 0, ignore_duplicate: bool = False
+    ) -> None:
+        """
+        Arguments:
+         bam: bam file path
+         min_q: minimum alignment quality (int)
+         ignore_duplicate: Flag to ignore PCR duplictes
+        """
         self.bam = bam
         self.min_q = min_q
+        self.ignore_duplicate = ignore_duplicate
 
     @staticmethod
     def _to_json(stat_data, out_file) -> None:
@@ -53,7 +62,7 @@ class BamParser:
                             or aln.is_supplementary
                             or aln.is_unmapped
                             or aln.mapping_quality < self.min_q
-                        ):
+                        ) or (self.ignore_duplicate and aln.is_duplicate):
                             continue
                         strand = "-" if aln.is_reverse else "+"
                         if strand != gene.strand:

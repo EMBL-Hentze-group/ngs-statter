@@ -62,6 +62,14 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
     type=int,
 )
 @click.option(
+    "--ignore_duplicate",
+    "ignore_duplicate",
+    is_flag=True,
+    show_default=True,
+    default=False,
+    help="Flag to ignore PCR duplicate reads (after samtools markdup)",
+)
+@click.option(
     "--out_json",
     "out_json",
     required=True,
@@ -76,6 +84,7 @@ def gene_type_read_length_stats(
     gene_name: str,
     gene_type: str,
     min_q: int = 0,
+    ignore_duplicate: bool = False,
 ) -> None:
     """
     Given a gff3 file, a list of features to parse, and a bam file
@@ -86,7 +95,7 @@ def gene_type_read_length_stats(
     gff3_genes = gff3_parse.parse_gene_info(
         gene_id=gene_id, gene_name=gene_name, gene_type=gene_type
     )
-    bam_parser = BamParser(bam=bam, min_q=min_q)
+    bam_parser = BamParser(bam=bam, min_q=min_q, ignore_duplicate=ignore_duplicate)
     bam_parser.read_length_stats_per_gene_type(genes=gff3_genes, out_json=out_json)
 
 
