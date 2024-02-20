@@ -23,6 +23,7 @@ dynamic = ["version"]
 [project.scripts]
 read_length_parser = "statter.scripts.read_length_stats:read_length_parser"
 read_length_plotter = "statter.scripts.read_length_stats:read_length_plotter"
+alignment_stats_STAR = "statter.scripts.bam_stats:alignment_stats_STAR"
 gene_type_read_length_parser = "statter.scripts.bam_stats:gene_type_read_length_stats"
 gene_type_read_length_plotter = "statter.scripts.bam_stats:gene_type_length_plotter"
 unmapped_fastq_single_end = "statter.scripts.unmapped_splitter:unmapped_fastq_single_end"

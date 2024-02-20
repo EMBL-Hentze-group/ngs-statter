@@ -12,6 +12,7 @@ A package to compute read/alignment statistics per fastq/bam file and parsers fo
 - [x] [ganon](https://pirovc.github.io/ganon/) unclassified single end reads parser
 - [x] [kraken2](https://github.com/DerrickWood/kraken2/blob/master/docs/MANUAL.markdown) report aggregator
 - [x] [fastp](https://github.com/OpenGene/fastp) fastp trimming stats aggregator
+- [x] [STAR aligner](https://github.com/alexdobin/STAR) alignment stats to json
 
 **Plotting functions**  
 - [x] Fastq read length distribution plot

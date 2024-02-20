@@ -83,3 +83,43 @@ class BamParser:
                 f"Cannot parse data form given bam file: {self.bam}! Check your input GFF3 and Bam file"
             )
         self._to_json(gene_read_lens, out_json)
+
+    def STAR_alignment_stats(self, out_json: str) -> None:
+        """
+        Write STAR alignment stats to json
+        """
+        map_stats = {"Unique": 0, "PCR duplicate": 0, "Total aligned": 0}
+        with pysam.AlignmentFile(self.bam, "rb") as bh:
+            for aln in bh:
+                if aln.is_unmapped:
+                    unmapped_tag = self._unmapped_type(str(aln.get_tag("uT")))
+                    try:
+                        map_stats[unmapped_tag] += 1
+                    except KeyError:
+                        map_stats[unmapped_tag] = 1
+                else:
+                    map_stats["Total aligned"] += 1
+                    if aln.is_duplicate:
+                        map_stats["PCR duplicate"] += 1
+                    else:
+                        map_stats["Unique"] += 1
+        self._to_json(map_stats, out_json)
+
+    def _unmapped_type(self, ut_type: str) -> str:
+        """
+        Helper function
+        Return STAR unmapped type:
+        see documentation: https://raw.githubusercontent.com/alexdobin/STAR/master/doc/STARmanual.pdf
+        """
+        unmapped_type = {
+            "0": "Unmapped: no seed/windows",
+            "1": "Unmapped: too short",
+            "2": "Unmapped: too many mismatches",
+            "3": "Multimapping: mapped to too many loci",
+            "4": "Unmapped: paired-end mate",
+        }
+        try:
+            unmapped = unmapped_type[ut_type]
+        except KeyError:
+            unmapped = "Unknown"
+        return unmapped

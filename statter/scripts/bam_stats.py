@@ -9,6 +9,34 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.option(
+    "--bam",
+    "bam",
+    required=True,
+    help="Alignments BAM file (MUST be co-ordinate sorted and indexed)",
+    type=click.Path(exists=True, file_okay=True, dir_okay=False),
+)
+@click.option(
+    "--min_q",
+    "min_q",
+    default=0,
+    help="Minimum alignment quality",
+    show_default=True,
+    type=int,
+)
+@click.option(
+    "--out_json",
+    "out_json",
+    required=True,
+    help="Output file to write json formatted data",
+    type=click.Path(exists=False),
+)
+def alignment_stats_STAR(bam: str, min_q: int, out_json: str) -> None:
+    bam_parser = BamParser(bam=bam, min_q=min_q, ignore_duplicate=False)
+    bam_parser.STAR_alignment_stats(out_json=out_json)
+
+
+@click.command(context_settings=CONTEXT_SETTINGS)
+@click.option(
     "--gff3",
     "gff3",
     required=True,
