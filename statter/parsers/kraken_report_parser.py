@@ -91,7 +91,7 @@ class Kraken2:
             try:
                 unclassified = self._kraken_report["0"]
                 out_str = "\t".join(
-                    [f"{order_count}", "unclassified", "0", "no rank", "unclassified"]
+                    [f"{order_count}", "0", "unclassified", "no rank"]
                     + list(chain(*unclassified))
                 )
                 wh.write(f"{out_str}\n")
