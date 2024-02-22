@@ -6,6 +6,7 @@ import logging
 
 import pysam
 from statter.parsers.gff_parser import Gene
+from statter.statter import star_bam_stats
 
 
 class BamParser:
@@ -103,6 +104,14 @@ class BamParser:
                         map_stats["PCR duplicate"] += 1
                     else:
                         map_stats["Unique"] += 1
+        self._to_json(map_stats, out_json)
+
+    def STAR_alignment_stats_rs(self, out_json: str) -> None:
+        map_stats = star_bam_stats(self.bam, self.min_q)
+        if len(map_stats) == 0:
+            raise RuntimeError(
+                f"Cannot parse alignment stats from {self.bam}! Check your input file"
+            )
         self._to_json(map_stats, out_json)
 
     def _unmapped_type(self, ut_type: str) -> str:
