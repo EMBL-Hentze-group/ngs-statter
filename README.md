@@ -43,6 +43,7 @@ $ ls -alh
 - read_length_plotter: generate interactive html plots from fastq read length distributions
 - gene_type_read_length_parser: for a given gff3 file and bam file, dump read length distribution per aligned gene type to json  
 - gene_type_read_length_plotter: generate interactive html plots from bam read length distributions
+- alignment_stats_STAR: write alignment statistics from STAR bam file
 - unmapped_fastq_single_end: split unmapped reads to multimapper unmapped and other unmapped reads
 - ganon_unc_to_fastq: given a ganon classification file and corresponding fastq file, create a new fastq file with all ganon unclassified reads
 - ganon_read_length_plotter: for ganon classification result plot contamination vs unclassified read length distribution
