@@ -1,5 +1,5 @@
 import json
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from pathlib import Path
 from typing import Dict, List
 import logging
@@ -17,11 +17,12 @@ class BamParser:
     def __init__(
         self, bam: str, min_q: int = 0, ignore_duplicate: bool = False
     ) -> None:
-        """
-        Arguments:
-         bam: bam file path
-         min_q: minimum alignment quality (int)
-         ignore_duplicate: Flag to ignore PCR duplictes
+        """__init__ BamPaser init
+
+        Args:
+            bam: bam file name. MUST BE co-ordinate sorted and indexed
+            min_q: Minimum alignment qualty. Defaults to 0.
+            ignore_duplicate: Flag to ignore PCR duplicates (if given by ``samtools markdup``). Defaults to False.
         """
         self.bam = bam
         self.min_q = min_q
@@ -112,7 +113,96 @@ class BamParser:
             raise RuntimeError(
                 f"Cannot parse alignment stats from {self.bam}! Check your input file"
             )
-        self._to_json(map_stats, out_json)
+        map_keys = set(
+            [
+                "Unmapped: too short",
+                "Unmapped: Total",
+                "Mapped: Uniquely mapped reads",
+                "Mapped: PCR duplicate reads",
+                "Mapped: Unique reads",
+                "Multimapping: mapped to too many loci",
+                "Unmapped: no seed/windows",
+                "Mapped: Total",
+                "Input reads",
+                "Mapped: Multimapped reads",
+            ]
+        )
+        diff_keys = map_keys - set(map_stats.keys())
+        if len(diff_keys) > 0:
+            missing_keys = ", ".join(diff_keys)
+            raise RuntimeError(
+                f"Cannot find the following values: {missing_keys} from {self.bam}. Check your input bam file!"
+            )
+        out_stats: OrderedDict[str, int | float] = OrderedDict()
+        out_stats["Input reads"] = map_stats["Input reads"]
+        out_stats["Mapped: Total"] = map_stats["Mapped: Total"]
+        # mapped
+        out_stats["Mapped: Total %"] = round(
+            float(map_stats["Mapped: Total"]) * 100 / map_stats["Input reads"], 3
+        )
+        # unique reads
+        out_stats["Mapped: Unique reads"] = map_stats["Mapped: Unique reads"]
+        out_stats["Mapped: Unique reads %"] = round(
+            float(map_stats["Mapped: Unique reads"]) * 100 / map_stats["Input reads"], 3
+        )
+        # pcr duplicates
+        out_stats["Mapped: PCR duplicate reads"] = map_stats[
+            "Mapped: PCR duplicate reads"
+        ]
+        out_stats["Mapped: PCR duplicate reads %"] = round(
+            float(map_stats["Mapped: PCR duplicate reads"])
+            * 100
+            / map_stats["Input reads"],
+            3,
+        )
+        # uniquely mapped reads
+        out_stats["Mapped: Uniquely mapped reads"] = map_stats[
+            "Mapped: Uniquely mapped reads"
+        ]
+        out_stats["Mapped: Uniquely mapped reads %"] = round(
+            float(map_stats["Mapped: Uniquely mapped reads"])
+            * 100
+            / map_stats["Input reads"],
+            3,
+        )
+        # multimapped reads
+        out_stats["Mapped: Multimapped reads"] = map_stats["Mapped: Multimapped reads"]
+        out_stats["Mapped: Multimapped reads %"] = round(
+            float(map_stats["Mapped: Multimapped reads"])
+            * 100
+            / map_stats["Input reads"],
+            3,
+        )
+        # unmapped
+        out_stats["Unmapped: Total"] = map_stats["Unmapped: Total"]
+        out_stats["Unmapped: Total %"] = round(
+            float(map_stats["Unmapped: Total"]) * 100 / map_stats["Input reads"], 3
+        )
+        # Multimapping: mapped to too many loci
+        out_stats["Unmapped: mapped to too many loci"] = map_stats[
+            "Multimapping: mapped to too many loci"
+        ]
+        out_stats["Unmapped: mapped to too many loci %"] = round(
+            float(map_stats["Multimapping: mapped to too many loci"])
+            * 100
+            / map_stats["Input reads"],
+            3,
+        )
+        # Unmapped: no seed/windows
+        out_stats["Unmapped: no seed/windows"] = map_stats["Unmapped: no seed/windows"]
+        out_stats["Unmapped: no seed/windows %"] = round(
+            float(map_stats["Unmapped: no seed/windows"])
+            * 100
+            / map_stats["Input reads"],
+            3,
+        )
+        # Unmapped: too short
+        out_stats["Unmapped: too short"] = map_stats["Unmapped: too short"]
+        out_stats["Unmapped: too short %"] = round(
+            float(map_stats["Unmapped: too short"]) * 100 / map_stats["Input reads"],
+            3,
+        )
+        self._to_json(out_stats, out_json)
 
     def _unmapped_type(self, ut_type: str) -> str:
         """
