@@ -39,6 +39,53 @@ def alignment_stats_STAR(bam: str, min_q: int, out_json: str) -> None:
 
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.option(
+    "--bam",
+    "bam",
+    required=True,
+    help="Alignments BAM file",
+    type=click.Path(exists=True, file_okay=True, dir_okay=False),
+)
+@click.option(
+    "--min_q",
+    "min_q",
+    default=0,
+    help="Minimum alignment quality",
+    show_default=True,
+    type=int,
+)
+@click.option(
+    "--out_json",
+    "out_json",
+    required=True,
+    help="Output file to write json formatted data",
+    type=click.Path(exists=False),
+)
+def basic_alignment_stats(bam: str, min_q: int, out_json: str) -> None:
+    """
+    Compute basic alignment statistics for a BAM file.
+
+    \b
+    Raises:
+        RuntimeError: If alignment statistics cannot be parsed from the BAM file.
+        RuntimeError: If any required values are missing from the alignment statistics.
+        RuntimeError: If the specified values cannot be found in the BAM file.
+
+    \b
+    The basic alignment statistics include the following metrics:
+    - Input reads: The total number of reads in the BAM file.
+    - Mapped: The number of reads that are mapped to the reference genome.
+    - Mapped %: The percentage of reads that are mapped to the reference genome.
+    - Unmapped: The number of reads that are not mapped to the reference genome.
+    - Unmapped %: The percentage of reads that are not mapped to the reference genome.
+
+    The alignment statistics are written to the specified output JSON file.
+    """
+    bam_parser = BamParser(bam=bam, min_q=min_q, ignore_duplicate=False)
+    bam_parser.alignment_stats_rs(out_json=out_json)
+
+
+@click.command(context_settings=CONTEXT_SETTINGS)
+@click.option(
     "--gff3",
     "gff3",
     required=True,

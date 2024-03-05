@@ -1,17 +1,46 @@
 import json
-from collections import defaultdict, OrderedDict
-from pathlib import Path
-from typing import Dict, List
 import logging
+from collections import OrderedDict, defaultdict
+from pathlib import Path
+from typing import Dict, List, Any
 
 import pysam
+
 from statter.parsers.gff_parser import Gene
-from statter.statter import star_bam_stats
+from statter.statter import alignment_stats, star_bam_stats
 
 
 class BamParser:
     """
-    Parse bam file for data
+    Parse bam file for data.
+
+    Attributes:
+        bam (str): The bam file name. Must be co-ordinate sorted and indexed.
+        min_q (int): Minimum alignment quality. Defaults to 0.
+        ignore_duplicate (bool): Flag to ignore PCR duplicates (if given by `samtools markdup`). Defaults to False.
+
+    Methods:
+        __init__(self, bam: str, min_q: int = 0, ignore_duplicate: bool = False) -> None:
+            Initialize the BamParser object.
+
+        _to_json(stat_data: Any, out_file: str) -> None:
+            Helper function to dump the given data in json format.
+
+        read_length_stats_per_gene_type(self, genes: Dict[str, List[Gene]], out_json: str) -> None:
+            Compute read length stats per gene.
+
+        STAR_alignment_stats(self, out_json: str) -> None:
+            Write STAR alignment stats to json.
+
+        STAR_alignment_stats_rs(self, out_json: str) -> None:
+            Write STAR alignment stats to json using the `star_bam_stats` function.
+
+        alignment_stats(self, out_json: str) -> None:
+            Write alignment stats to json using the `alignment_stats` function.
+
+        _unmapped_type(self, ut_type: str) -> str:
+            Helper function to return STAR unmapped type.
+
     """
 
     def __init__(
@@ -29,7 +58,7 @@ class BamParser:
         self.ignore_duplicate = ignore_duplicate
 
     @staticmethod
-    def _to_json(stat_data, out_file) -> None:
+    def _to_json(stat_data: Any, out_file: str) -> None:
         """
         Helper function
         dump the given data in json format
@@ -201,6 +230,56 @@ class BamParser:
         out_stats["Unmapped: too short %"] = round(
             float(map_stats["Unmapped: too short"]) * 100 / map_stats["Input reads"],
             3,
+        )
+        self._to_json(out_stats, out_json)
+
+    def alignment_stats_rs(self, out_json: str) -> None:
+        """
+        Compute alignment statistics for a BAM file.
+
+        Args:
+            out_json (str): The output file name for the alignment statistics in JSON format.
+
+        Raises:
+            RuntimeError: If alignment statistics cannot be parsed from the BAM file.
+            RuntimeError: If any required values are missing from the alignment statistics.
+            RuntimeError: If the specified values cannot be found in the BAM file.
+
+        Returns:
+            None
+
+        The alignment statistics include the following metrics:
+        - Input reads: The total number of reads in the BAM file.
+        - Mapped: The number of reads that are mapped to the reference genome.
+        - Mapped %: The percentage of reads that are mapped to the reference genome.
+        - Unmapped: The number of reads that are not mapped to the reference genome.
+        - Unmapped %: The percentage of reads that are not mapped to the reference genome.
+
+        The alignment statistics are written to the specified output file in JSON format.
+        """
+        align_stats: dict[str, int] = alignment_stats(self.bam, self.min_q)
+        if len(align_stats) == 0:
+            raise RuntimeError(
+                f"Cannot parse alignment stats from {self.bam}! Check your input file"
+            )
+        map_keys = set(["Input reads", "Mapped", "Unmapped"])
+        diff_keys = map_keys - set(align_stats.keys())
+        if len(diff_keys) > 0:
+            missing_keys = ", ".join(diff_keys)
+            raise RuntimeError(
+                f"Cannot find the following values: {missing_keys} from {self.bam}. Check your input bam file!"
+            )
+        out_stats: OrderedDict[str, int | float] = OrderedDict()
+        out_stats["Input reads"] = align_stats["Input reads"]
+        # Mapped
+        out_stats["Mapped"] = align_stats["Mapped"]
+        out_stats["Mapped %"] = round(
+            align_stats["Mapped"] * 100 / align_stats["Input reads"], 3
+        )
+        # Unmapped
+        out_stats["Unmapped"] = align_stats["Unmapped"]
+        out_stats["Unmapped %"] = round(
+            align_stats["Unmapped"] * 100 / align_stats["Input reads"], 3
         )
         self._to_json(out_stats, out_json)
 

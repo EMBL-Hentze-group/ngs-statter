@@ -100,7 +100,7 @@ pub fn bam_stats(bam: &str, min_q: u8) -> HashMap<String, u32> {
                 Aux::U8(v) => v as u32,
                 _ => panic!("Expected Aux::U8"),
             },
-            Err(_) => panic!("Cannot parse alignment info!"),
+            Err(_) => panic!("Cannot parse alignment info from 'NH' tags: {}", bam),
         };
         if nh > 1 {
             *map_stat
