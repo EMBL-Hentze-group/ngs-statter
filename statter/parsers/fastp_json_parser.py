@@ -6,7 +6,9 @@ from pathlib import Path
 import re
 from typing import List, Dict, Set
 
-"""
+"""fastp json parser
+
+
 parse fastp json outputs and generate trimming stats per sample report file
 """
 
@@ -14,8 +16,9 @@ logger = logging.getLogger(__file__)
 
 
 class Fastp:
-    """
-    Fastp reports parser
+    """Fastp reports parser
+
+    Parse fastp json reports and generate stats.
     """
 
     def __init__(
@@ -25,6 +28,17 @@ class Fastp:
         first_trim_pattern: str = "*.first_trim.json",
         second_trim_pattern: str = "*.second_trim.json",
     ) -> None:
+        """Fastp class init
+
+        Args:
+            trim_dir (str): Folder path with fastp trim stat files
+            out_csv (str): File name to write merged trimming stas
+            first_trim_pattern (str, optional): file name pattern for first trimming step. Defaults to "*.first_trim.json".
+            second_trim_pattern (str, optional): file naming pattern for second trimming step. Defaults to "*.second_trim.json".
+
+        Raises:
+            RuntimeError: raises RuntimeError if ``first_trim_pattern`` and ``second_trim_pattern`` are the same
+        """
         self.trim_dir = trim_dir
         self.out_csv = out_csv
         if first_trim_pattern == second_trim_pattern:
@@ -37,7 +51,7 @@ class Fastp:
         self._trim2_files = self._collect_sample_files(pattern=second_trim_pattern)
         if len(self._trim1_files) != len(self._trim2_files):
             logger.warning(
-                f"Unequal number of files with first and second trim data! # first trim files: {len(self._first_trim_files)}, # second trim files: {len(self._second_trim_files)}"
+                f"Unequal number of files with first and second trim data! # first trim files: {len(self._trim1_files)}, # second trim files: {len(self._trim2_files)}"
             )
         # dictionary for trimming stats
         self.trimming_stats = defaultdict(dict)
@@ -45,8 +59,9 @@ class Fastp:
         self.stats_keys = set()
 
     def _list_json_files(self, pattern: str) -> List[Path]:
-        """
-        helper function
+        """helper function
+
+        Glob using given pattern in self.trim_dir
         """
         files = list(Path(self.trim_dir).glob(pattern))
         if len(files) == 0:
@@ -57,10 +72,9 @@ class Fastp:
         return files
 
     def _collect_sample_files(self, pattern: str) -> Dict[str, str]:
-        """
-        helper function
-        glob and list files using the given pattern and
-        collect fastp trim stat json file per sample
+        """helper function
+
+        Glob and list files using the given pattern and collect fastp trim stat json file per sample.
         """
         sample_files = {}
         pattern_clean = re.sub(r"\*{1,}", "", pattern) + ".*$"
@@ -120,24 +134,39 @@ class Fastp:
                 )
                 pass
             self.trimming_stats[sample]["raw_counts"] = raw_counts
-            self.trimming_stats[sample]["trimmed_counts"] = trimmed_counts
+            self.trimming_stats[sample]["trimmed_retained_counts"] = trimmed_counts
+            self.trimming_stats[sample]["trimmed_retained_%"] = round(
+                float(trimmed_counts) * 100 / raw_counts, 3
+            )
             # add in between data
             self._add_data(first_trim["filtering_result"], sample, omit_keys)
             self._add_data(second_trim["filtering_result"], sample, omit_keys)
         self._write_stats()
 
     def _load_json(self, fname: str) -> Dict:
-        """
-        helper function
-        load json
+        """load json
+
+        Helper function, load json file.
+
+        Args:
+            fname (str): Json file name
+
+        Returns:
+            Dict: contents of the json file
         """
         with open(fname, "r") as jh:
             trim_dat = json.load(jh)
         return trim_dat
 
     def _add_data(self, json_dict: Dict, sample: str, omit_keys: Set[str]) -> None:
-        """
-        Helper function add data to respective sample key
+        """add data
+
+        Helper function to add data to respective sample hey
+
+        Args:
+            json_dict (Dict): json dictionary
+            sample (str): sample name
+            omit_keys (Set[str]): keys to omit looking up in ``json_dict``
         """
         for k, v in json_dict.items():
             if k in omit_keys or v == 0:
@@ -155,7 +184,11 @@ class Fastp:
         """
         if Path(self.out_csv).exists():
             logger.warning(f"Re-writing file {self.out_csv}")
-        headers = ["raw_counts", "trimmed_counts"] + sorted(self.stats_keys)
+        headers = [
+            "raw_counts",
+            "trimmed_retained_counts",
+            "trimmed_retained_%",
+        ] + sorted(self.stats_keys)
         with open(self.out_csv, "w") as wh:
             header_str = "\t".join(headers)
             wh.write(f"samples\t{header_str}\n")
