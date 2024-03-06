@@ -6,9 +6,10 @@ from itertools import islice
 from pathlib import Path
 from typing import Callable
 import json
+from statter.statter import fastq_read_length
 
 """
-parse fastq file and write read length stats to a tsv file
+parse fastq file and write read length stats to a json file
 """
 
 
@@ -54,6 +55,22 @@ class FqLength:
                     self._read_len_stats[read_length] += 1
                 except KeyError:
                     self._read_len_stats[read_length] = 1
+        self._write_stats()
+
+    def read_length_rs(self) -> None:
+        """read_length_rs
+
+        Compute the read length distribution from a given fastq file
+        and write the stats to a file.
+
+        Raises:
+            RuntimeError: If the read length distribution cannot be computed from the given fastq file.
+        """
+        self._read_len_stats = fastq_read_length(self.fq)
+        if len(self._read_len_stats) == 0:
+            raise RuntimeError(
+                f"Cannot compute read length distribution from given fastq file {self.fq}! Check the input file"
+            )
         self._write_stats()
 
     def _write_stats(self) -> None:
