@@ -1,4 +1,4 @@
-use rust_htslib::{bam, bam::record::Aux, bam::Read};
+use rust_htslib::{bam, bam::Read};
 use std::collections::HashMap;
 
 /// This code snippet represents a function called `align_stats` that takes two parameters: `bam` (a string) and `min_q` (an unsigned 8-bit integer).
