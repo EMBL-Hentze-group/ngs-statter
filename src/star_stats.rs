@@ -1,4 +1,3 @@
-use pyo3::panic;
 use rust_htslib::{bam, bam::record::Aux, bam::Read};
 use std::collections::HashMap;
 // use std::collections::{HashMap, HashSet};
