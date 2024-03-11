@@ -168,12 +168,15 @@ def gene_type_read_length_stats(
     calculate the length distribution of reads aligning to these features
     and write this info in json format
     """
-    gff3_parse = GFF3(gff3=gff3, features=gene_features)
-    gff3_genes = gff3_parse.parse_gene_info(
-        gene_id=gene_id, gene_name=gene_name, gene_type=gene_type
-    )
     bam_parser = BamParser(bam=bam, min_q=min_q, ignore_duplicate=ignore_duplicate)
-    bam_parser.read_length_stats_per_gene_type(genes=gff3_genes, out_json=out_json)
+    bam_parser.read_length_stats_per_gene_type_rs(
+        gff3_file=gff3,
+        out_json=out_json,
+        features=gene_features,
+        gene_id=gene_id,
+        gene_name=gene_name,
+        gene_type=gene_type,
+    )
 
 
 @click.command(context_settings=CONTEXT_SETTINGS)

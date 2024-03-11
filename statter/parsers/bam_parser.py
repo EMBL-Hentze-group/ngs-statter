@@ -7,7 +7,7 @@ from typing import Dict, List, Any
 import pysam
 
 from statter.parsers.gff_parser import Gene
-from statter.statter import alignment_stats, star_bam_stats
+from statter.statter import alignment_stats, star_bam_stats, gene_type_read_dist
 
 
 class BamParser:
@@ -114,6 +114,31 @@ class BamParser:
                 f"Cannot parse data form given bam file: {self.bam}! Check your input GFF3 and Bam file"
             )
         self._to_json(gene_read_lens, out_json)
+
+    def read_length_stats_per_gene_type_rs(
+        self,
+        gff3_file: str,
+        out_json: str,
+        features: list = ["gene", "tRNA"],
+        gene_id: str = "gene_id",
+        gene_name: str = "gene_name",
+        gene_type: str = "gene_type",
+    ) -> None:
+        gene_type_dist: dict[str, dict[int, int]] = gene_type_read_dist(
+            self.bam,
+            self.min_q,
+            self.ignore_duplicate,
+            gff3_file,
+            features,
+            gene_id,
+            gene_name,
+            gene_type,
+        )
+        if len(gene_type_dist) == 0:
+            raise RuntimeError(
+                f"Cannot find reads in {self.bam} aligned to features {features} in {gff3_file}"
+            )
+        self._to_json(gene_type_dist, out_json)
 
     def STAR_alignment_stats(self, out_json: str) -> None:
         """
