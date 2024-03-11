@@ -31,14 +31,14 @@ pub fn alignment_stats(bam: &str, min_q: u8) -> HashMap<String, u32> {
             Ok(asg) => asg,
             Err(e) => panic!("Cannot parse bam records {}", e.to_string()),
         };
-        if asg.is_unmapped() {
-            *map_stat.entry(String::from("Unmapped")).or_insert(0) += 1;
-        } else if asg.is_secondary()
+        if asg.is_secondary()
             || asg.is_supplementary()
             || asg.is_quality_check_failed()
             || asg.mapq() < min_q
         {
             continue;
+        } else if asg.is_unmapped() {
+            *map_stat.entry(String::from("Unmapped")).or_insert(0) += 1;
         } else {
             *map_stat.entry(String::from("Mapped")).or_insert(0) += 1;
         }
