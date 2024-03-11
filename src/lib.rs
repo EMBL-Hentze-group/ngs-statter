@@ -1,8 +1,11 @@
+use gene_type_stats::wrapper_compute_gene_type_read_dist;
 use pyo3::prelude::*;
 use std::collections::HashMap;
 use unmapped::Unmapped;
 mod align_stats;
 mod fastq_stats;
+mod gene_type_stats;
+mod gff_parser;
 mod reader;
 mod star_stats;
 mod unmapped;
@@ -37,6 +40,31 @@ fn star_bam_stats(bam: &str, min_q: u8) -> HashMap<String, u32> {
 fn alignment_stats(bam: &str, min_q: u8) -> HashMap<String, u32> {
     align_stats::alignment_stats(bam, min_q)
 }
+
+/// compute gene type read length distribuition
+#[pyfunction]
+fn gene_type_read_dist(
+    bam_file: &str,
+    min_q: u8,
+    ignore_duplicate: bool,
+    gff3_file: &str,
+    features: Vec<String>,
+    gene_id: String,
+    gene_name: String,
+    gene_type: String,
+) -> HashMap<String, HashMap<u16, u32>> {
+    wrapper_compute_gene_type_read_dist(
+        bam_file,
+        min_q,
+        ignore_duplicate,
+        gff3_file,
+        features,
+        gene_id,
+        gene_name,
+        gene_type,
+    )
+}
+
 /// A Python module implemented in Rust.
 #[pymodule]
 fn statter(_py: Python, m: &PyModule) -> PyResult<()> {
@@ -45,5 +73,6 @@ fn statter(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(star_bam_stats, m)?)?;
     m.add_function(wrap_pyfunction!(alignment_stats, m)?)?;
     m.add_function(wrap_pyfunction!(fastq_read_length, m)?)?;
+    m.add_function(wrap_pyfunction!(gene_type_read_dist, m)?)?;
     Ok(())
 }
