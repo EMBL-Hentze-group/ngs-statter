@@ -169,16 +169,20 @@ class BamParser:
             )
         map_keys = set(
             [
-                "Unmapped: too short",
-                "Unmapped: Total",
                 "Mapped: Uniquely mapped reads",
                 "Mapped: PCR duplicate reads",
                 "Mapped: Unique reads",
-                "Multimapping: mapped to too many loci",
-                "Unmapped: no seed/windows",
                 "Mapped: Total",
                 "Input reads",
                 "Mapped: Multimapped reads",
+            ]
+        )
+        unmap_keys = set(
+            [
+                "Unmapped: too short",
+                "Unmapped: Total",
+                "Multimapping: mapped to too many loci",
+                "Unmapped: no seed/windows",
             ]
         )
         diff_keys = map_keys - set(map_stats.keys())
@@ -187,6 +191,14 @@ class BamParser:
             raise RuntimeError(
                 f"Cannot find the following values: {missing_keys} from {self.bam}. Check your input bam file!"
             )
+        diff_keys = unmap_keys - set(map_stats.keys())
+        if len(diff_keys) > 0:
+            missing_keys = ", ".join(diff_keys)
+            logging.warning(
+                f"Cannot find the following values: {missing_keys} from {self.bam}. These values will be set to 0!"
+            )
+            for dk in diff_keys:
+                map_stats[dk] = 0
         out_stats: OrderedDict[str, int | float] = OrderedDict()
         out_stats["Input reads"] = map_stats["Input reads"]
         out_stats["Mapped: Total"] = map_stats["Mapped: Total"]
