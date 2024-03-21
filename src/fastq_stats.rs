@@ -20,13 +20,13 @@ use std::io::{BufRead, BufReader, Read};
 pub fn fastq_read_length_counter(fastq: &str) -> HashMap<u16, u32> {
     let fq_reader: BufReader<Box<dyn Read>> = reader::file_reader(fastq);
     let mut read_stats: HashMap<u16, u32> = HashMap::new();
-    let mut fa_index: usize = 1;
+    let mut fa_index: usize = 0;
     let mut found_header: bool = false;
     for (index, line) in fq_reader.lines().enumerate() {
-        if (index != fa_index) && (index != fa_index - 1) {
-            // either the sequence line, or the header line (just before sequence)
-            continue;
-        }
+        // if (index != fa_index) && (index != fa_index - 1) {
+        //     // either the sequence line, or the header line (just before sequence)
+        //     continue;
+        // }
         let seq = match line {
             Ok(s) => s,
             Err(_) => panic!("Cannot parse fastq lines from file {:?}", fastq),
@@ -34,9 +34,10 @@ pub fn fastq_read_length_counter(fastq: &str) -> HashMap<u16, u32> {
         if seq.starts_with("@") {
             // header line, confirm it starts with "@"
             found_header = true;
+            fa_index = index;
             continue;
         }
-        if found_header {
+        if (found_header) && (index == fa_index+1){
             // sequence line and the line before is confirmed to be header
             let slen: u16 = seq.len() as u16;
             fa_index = index + 4;
