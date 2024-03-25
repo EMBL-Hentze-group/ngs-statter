@@ -20,7 +20,7 @@ def read_length_parser(fastq: str, json: str) -> None:
     For a given fastq file, compute read lengths and write the distribution to json format
     """
     flp = FqLength(fq=fastq, out_file=json)
-    flp.read_length_rs()
+    flp.read_length()
 
 
 @click.command(context_settings=CONTEXT_SETTINGS)
