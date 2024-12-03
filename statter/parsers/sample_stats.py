@@ -42,7 +42,7 @@ class SampleStats:
         """
         first_trim = self._load_json(self.first_trim)
         second_trim = self._load_json(self.second_trim)
-        omit_keys = set(["filtering_result"])
+        omit_keys = set(["passed_filter_reads"])
         self._sample_stats["Raw reads"] = first_trim["summary"]["before_filtering"]["total_reads"]
         for comb in (first_trim["filtering_result"],second_trim["filtering_result"]):
             for k,v in comb.items():
