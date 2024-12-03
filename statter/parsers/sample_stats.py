@@ -91,7 +91,7 @@ class SampleStats:
         self._add_trimming_stats()
         self._add_rRNA_stats()
         self._add_alignment_stats()
-        with open("out","w") as _jh:
+        with open(out,"w") as _jh:
             json.dump(self._sample_stats, _jh)
 
 def gather_sample_stats(stats_dir:Union[str,Path],out:str,suffix="sample_stats.json",) -> None:
