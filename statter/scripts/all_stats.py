@@ -70,10 +70,10 @@ def sample_stats(first_trim, second_trim, rRNA_free, rRNA_mapped, align_stats, o
     show_default=True,
     type=str,
 )
-def gather_sample_stats(stats_dir:str,suffix:str,out_csv:str) -> None:
+def gather_sample_stats(stats_dir:str,out_csv:str,suffix:str) -> None:
     """
     Aggregate all sample stats into one csv file
     \b 
     see sample_stats -h
     """
-    gather_sample_stats(stats_dir,suffix,out_csv)
+    gather_sample_stats(stats_dir=stats_dir,out=out_csv,suffix=suffix)
