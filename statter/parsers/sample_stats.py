@@ -94,7 +94,7 @@ class SampleStats:
         with open(out,"w") as _jh:
             json.dump(self._sample_stats, _jh)
 
-def gather_sample_stats(stats_dir:Union[str,Path],out:str,suffix="sample_stats.json",) -> None:
+def _gather_sample_stats(stats_dir:Union[str,Path],out:str,suffix="sample_stats.json",) -> None:
     """gather_sample_stats 
     Gather all sample stats with given prefix and write them into a single csv file
 

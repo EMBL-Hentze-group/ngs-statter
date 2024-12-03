@@ -1,5 +1,5 @@
 import click
-from statter.parsers.sample_stats import SampleStats, gather_sample_stats
+from statter.parsers.sample_stats import SampleStats, _gather_sample_stats
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 @click.command(context_settings=CONTEXT_SETTINGS)
@@ -76,4 +76,4 @@ def gather_sample_stats(stats_dir:str,out_csv:str,suffix:str) -> None:
     \b 
     see sample_stats -h
     """
-    gather_sample_stats(stats_dir=stats_dir,out=out_csv,suffix=suffix)
+    _gather_sample_stats(stats_dir=stats_dir,out=out_csv,suffix=suffix)
