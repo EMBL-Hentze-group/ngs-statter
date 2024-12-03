@@ -114,4 +114,4 @@ def _gather_sample_stats(stats_dir:Union[str,Path],out:str,suffix="sample_stats.
     if Path(out).exists():
         logger.warning(f"Re-writing file {out}")
     all_stats = pd.DataFrame(stats,index=names)
-    all_stats.to_csv(sep="\t",index=True)
+    all_stats.to_csv(out,sep="\t",index=True)
