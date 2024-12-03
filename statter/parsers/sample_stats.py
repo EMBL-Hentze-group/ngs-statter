@@ -88,7 +88,7 @@ class SampleStats:
         """
         if Path(out).exists():
             logger.warning(f"Re-writing file {out}")
-        self._add_alignment_stats()
+        self._add_trimming_stats()
         self._add_rRNA_stats()
         self._add_alignment_stats()
         with open("out","w") as _jh:
