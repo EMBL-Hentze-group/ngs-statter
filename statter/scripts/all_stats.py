@@ -38,8 +38,14 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
     help="Genome alignment statistics json file",
     type=click.Path(exists=True, file_okay=True, dir_okay=False),
 )
+@click.option(
+    "--dedup_stats",
+    "dedup_stats",
+    help="Alignment statistics after UMI deduplicateion json file",
+    type=click.Path(exists=True, file_okay=True, dir_okay=False),
+)
 @click.option("--output","output",required=True, help = "Output json file", type=click.Path(exists=False))
-def sample_stats(first_trim, second_trim, rRNA_free, rRNA_mapped, align_stats, output):
+def sample_stats(first_trim, second_trim, rRNA_free, rRNA_mapped, align_stats, output, dedup_stats = None):
     """
     Gather per sample trimming, rRNA removal and genome alignment statistics into one json file
     """

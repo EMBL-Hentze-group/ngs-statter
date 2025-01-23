@@ -1,20 +1,20 @@
 import logging
 import json
-from typing import Dict, List
+from typing import Dict, List, Union, Optional
 from collections import OrderedDict
 import re
 from pathlib import Path
 import pandas as pd
-from pysam import Union
 
 logger = logging.getLogger(__name__)
 class SampleStats:
-    def __init__(self, first_trim:str, second_trim:str, rRNA_free:str, rRNA_mapped:str, align_stats:str) -> None:
+    def __init__(self, first_trim:str, second_trim:str, rRNA_free:str, rRNA_mapped:str, align_stats:str, dedup_stats:Optional[str] = None) -> None:
         self.first_trim = first_trim
         self.second_trim = second_trim
         self.rRNA_free = rRNA_free
         self.rRNA_mapped = rRNA_mapped
         self.align_stats = align_stats
+        self.dedup_stats = dedup_stats
         
         self._sample_stats:Dict = OrderedDict()
         # collect stats
@@ -72,7 +72,7 @@ class SampleStats:
         """
         align_stats = self._load_json(self.align_stats)
         if align_stats["Input reads"] != self._sample_stats["rRNA free"]:
-            raise RuntimeError("The number of rRNA reads does not match the number of genome mapped reads!")
+            raise RuntimeError("The number of rRNA free reads does not match the number of genome mapped reads!")
         for k,v in align_stats.items():
             if re.match(r"^.*\%$",k):
                 continue
@@ -80,6 +80,16 @@ class SampleStats:
         # self._sample_stats[""] = self._load_json(self.rRNA_free)["summary"][0]["total_reads"]
         # self._sample_stats["Mapped reads"] = self._load_json(self.rRNA_mapped)["summary"][0]["total_reads"]
     
+    def _add_dedup_stats(self) -> None:
+        """_add_dedup_stats Helper function
+        add alignment statistics after deduplication to stats dictionary
+        """
+        dedup_stats = self._load_json(self.dedup_stats) # type: ignore
+        for k,v in dedup_stats.items():
+            if re.match(r"^.*\%$",k):
+                continue
+            self._sample_stats[f"{k} (UMI deduplicated)"] = v
+
     def collect_stats(self,out:str) -> None:
         """collect_stats 
         Collect all stats and write to a json file
@@ -91,6 +101,8 @@ class SampleStats:
         self._add_trimming_stats()
         self._add_rRNA_stats()
         self._add_alignment_stats()
+        if self.dedup_stats is not None:
+            self._add_dedup_stats()
         with open(out,"w") as _jh:
             json.dump(self._sample_stats, _jh)
 
