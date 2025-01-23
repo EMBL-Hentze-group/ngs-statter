@@ -49,7 +49,7 @@ def sample_stats(first_trim, second_trim, rRNA_free, rRNA_mapped, align_stats, o
     """
     Gather per sample trimming, rRNA removal and genome alignment statistics into one json file
     """
-    stat = SampleStats(first_trim, second_trim, rRNA_free, rRNA_mapped, align_stats)
+    stat = SampleStats(first_trim, second_trim, rRNA_free, rRNA_mapped, align_stats, dedup_stats)
     stat.collect_stats(output)
 
 
