@@ -32,9 +32,11 @@ ganon_unc_to_fastq = "statter.scripts.ganon_parser:unclassifed_read_parser"
 ganon_read_length_plotter = "statter.scripts.ganon_parser:ganon_read_length_plotter"
 ganon_abundance_aggregator = "statter.scripts.ganon_parser:ganon_abundance_aggregator"
 kraken_report_aggregator = "statter.scripts.kraken_parser:kraken_report_aggregator"
+sourmash_report_aggregator = "statter.scripts.sourmash_metagenome_parser:sourmash_report_aggregator"
 fastp_stats_aggregator = "statter.scripts.read_length_stats:fastp_stats_aggregator"
 sample_stats = "statter.scripts.all_stats:sample_stats"
 gather_sample_stats = "statter.scripts.all_stats:gather_sample_stats"
+
 
 
 [tool.setuptools.packages]
