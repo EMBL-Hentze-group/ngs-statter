@@ -11,6 +11,8 @@ A package to compute read/alignment statistics per fastq/bam file and parsers fo
 - [ ] paired end unmapped fastq parser
 - [x] [ganon](https://pirovc.github.io/ganon/) unclassified single end reads parser
 - [x] [kraken2](https://github.com/DerrickWood/kraken2/blob/master/docs/MANUAL.markdown) report aggregator
+- [x] [sourmash tax metagenome][https://sourmash.readthedocs.io/en/latest/classifying-signatures.html) Kraken style report aggregator
+
 - [x] [fastp](https://github.com/OpenGene/fastp) fastp trimming stats aggregator
 - [x] [STAR aligner](https://github.com/alexdobin/STAR) alignment stats to json
 
@@ -50,4 +52,5 @@ $ ls -alh
 - ganon_read_length_plotter: for ganon classification result plot contamination vs unclassified read length distribution
 - ganon_abundance_aggregator: aggregate ganon classification report from multiple samples into a single file
 - fastp_stats_aggregator: aggregate trimming stats after fastp trimming
+- sourmash_report_aggregator: aggregate Kraken style reports from `sourmash tax metagenome -F kreport` output files
 
