@@ -75,13 +75,13 @@ def sample_stats(
     Gather per sample trimming, rRNA removal and genome alignment statistics into one json file
     """
     stat = SampleStats(
-        first_trim,
-        second_trim,
-        rRNA_free,
-        rRNA_mapped,
-        align_stats,
-        skip_check_rRNA,
-        dedup_stats,
+        first_trim=first_trim,
+        second_trim=second_trim,
+        rRNA_free=rRNA_free,
+        rRNA_mapped=rRNA_mapped,
+        align_stats=align_stats,
+        check_rRNA=not skip_check_rRNA,  # default is to check rRNA free reads agaist genome mapped reads
+        dedup_stats=dedup_stats,
     )
     stat.collect_stats(output)
 
