@@ -1,7 +1,10 @@
 import click
+from typing import Optional
 from statter.parsers.sample_stats import SampleStats, _gather_sample_stats
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
+
+
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.option(
     "--first_trim",
@@ -39,17 +42,47 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
     type=click.Path(exists=True, file_okay=True, dir_okay=False),
 )
 @click.option(
+    "--skip_check_rRNA",
+    is_flag=True,
+    default=False,
+    show_default=True,
+    help="By defalult, total number of rRNA free reads is checked against the number input reads for genome alignment. If this flag is set, the check is skipped.",
+)
+@click.option(
     "--dedup_stats",
     "dedup_stats",
     help="Alignment statistics after UMI deduplicateion json file",
     type=click.Path(exists=True, file_okay=True, dir_okay=False),
 )
-@click.option("--output","output",required=True, help = "Output json file", type=click.Path(exists=False))
-def sample_stats(first_trim, second_trim, rRNA_free, rRNA_mapped, align_stats, output, dedup_stats = None):
+@click.option(
+    "--output",
+    "output",
+    required=True,
+    help="Output json file",
+    type=click.Path(exists=False),
+)
+def sample_stats(
+    first_trim: str,
+    second_trim: str,
+    rRNA_free: str,
+    rRNA_mapped: str,
+    align_stats: str,
+    output: str,
+    skip_check_rRNA: bool = False,
+    dedup_stats: Optional[str] = None,
+):
     """
     Gather per sample trimming, rRNA removal and genome alignment statistics into one json file
     """
-    stat = SampleStats(first_trim, second_trim, rRNA_free, rRNA_mapped, align_stats, dedup_stats)
+    stat = SampleStats(
+        first_trim,
+        second_trim,
+        rRNA_free,
+        rRNA_mapped,
+        align_stats,
+        skip_check_rRNA,
+        dedup_stats,
+    )
     stat.collect_stats(output)
 
 
@@ -76,10 +109,10 @@ def sample_stats(first_trim, second_trim, rRNA_free, rRNA_mapped, align_stats, o
     show_default=True,
     type=str,
 )
-def gather_sample_stats(stats_dir:str,out_csv:str,suffix:str) -> None:
+def gather_sample_stats(stats_dir: str, out_csv: str, suffix: str) -> None:
     """
     Aggregate all sample stats into one csv file
-    \b 
+    \b
     see sample_stats -h
     """
-    _gather_sample_stats(stats_dir=stats_dir,out=out_csv,suffix=suffix)
+    _gather_sample_stats(stats_dir=stats_dir, out=out_csv, suffix=suffix)
