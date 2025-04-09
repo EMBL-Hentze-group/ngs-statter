@@ -43,6 +43,7 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 )
 @click.option(
     "--skip_check_rRNA",
+    "skip_check_rRNA",
     is_flag=True,
     default=False,
     show_default=True,
