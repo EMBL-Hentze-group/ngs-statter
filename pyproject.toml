@@ -1,26 +1,23 @@
-[build-system]
-requires = ["maturin>=1.4,<2.0"]
-build-backend = "maturin"
-
 [project]
 name = "statter"
-requires-python = ">=3.8"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "sahadeva",email = "sudeep.sahadevan@embl.de"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.12"
 dependencies = [
-    "bokeh >= 3.2.2",
-    "click >= 8.1.0",
-    "pandas >= 2.1.0",
-    "pysam >= 0.21.0",
-    "jsonschema >= 4.20.0",
-    "networkx >= 3.0"
+    "bokeh (>=3.8.0,<4.0.0)",
+    "click (>=8.3.0,<9.0.0)",
+    "pandas (>=2.3.3,<3.0.0)",
+    "pysam (>=0.23.3,<0.24.0)",
+    "jsonschema (>=4.25.1,<5.0.0)",
+    "pydantic (>=2.12.3,<3.0.0)"
 ]
-classifiers = [
-    "Programming Language :: Rust",
-    "Programming Language :: Python :: Implementation :: CPython",
-    "Programming Language :: Python :: Implementation :: PyPy",
-]
-dynamic = ["version"]
 
-[project.scripts]
+[tool.poetry.scripts]
 read_length_parser = "statter.scripts.read_length_stats:read_length_parser"
 read_length_plotter = "statter.scripts.read_length_stats:read_length_plotter"
 alignment_stats_STAR = "statter.scripts.bam_stats:alignment_stats_STAR"
@@ -38,9 +35,12 @@ sample_stats = "statter.scripts.all_stats:sample_stats"
 gather_sample_stats = "statter.scripts.all_stats:gather_sample_stats"
 
 
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0", "maturin>=1.4,<2.0"]
+build-backend = "poetry.core.masonry.api"
 
-[tool.setuptools.packages]
-find = {}
+[tool.poetry.group.build.dependencies]
+maturin = "^1.9.6"
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
