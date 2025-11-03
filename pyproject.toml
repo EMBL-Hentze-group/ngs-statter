@@ -12,9 +12,9 @@ dependencies = [
     "bokeh (>=3.8.0,<4.0.0)",
     "click (>=8.3.0,<9.0.0)",
     "pandas (>=2.3.3,<3.0.0)",
-    "pysam (>=0.23.3,<0.24.0)",
     "jsonschema (>=4.25.1,<5.0.0)",
-    "pydantic (>=2.12.3,<3.0.0)"
+    "pydantic (>=2.12.3,<3.0.0)",
+    "pysam (>=0.23.3,<0.24.0)",
 ]
 
 [tool.poetry.scripts]
