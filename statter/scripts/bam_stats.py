@@ -34,7 +34,7 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 )
 def alignment_stats_STAR(bam: str, min_q: int, out_json: str) -> None:
     bam_parser = BamParser(bam=bam, min_q=min_q, ignore_duplicate=False)
-    bam_parser.STAR_alignment_stats_rs(out_json=out_json)
+    bam_parser.STAR_alignment_stats(out_json=out_json)
 
 
 @click.command(context_settings=CONTEXT_SETTINGS)

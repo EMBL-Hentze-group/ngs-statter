@@ -2,12 +2,12 @@ import json
 import logging
 from collections import OrderedDict, defaultdict
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any, Dict, List
 
 import pysam
 
 from statter.parsers.gff_parser import Gene
-from statter.statter import alignment_stats, star_bam_stats, gene_type_read_dist
+from statter.statter import alignment_stats, gene_type_read_dist, star_bam_stats
 
 
 class BamParser:
@@ -144,21 +144,45 @@ class BamParser:
         """
         Write STAR alignment stats to json
         """
-        map_stats = {"Unique": 0, "PCR duplicate": 0, "Total aligned": 0}
+        map_stats = {"Mapped: Uniquely mapped reads": 0,
+                    "Mapped: PCR duplicate reads": 0,
+                    "Mapped: Unique reads": 0,
+                    "Mapped: Total": 0,
+                    "Input reads": 0,
+                    "Mapped: Multimapped reads": 0}
+        read_ids:set[str] = set()
         with pysam.AlignmentFile(self.bam, "rb") as bh:
             for aln in bh:
+                if aln.is_paired:
+                    if aln.query_name in read_ids:
+                        continue
+                    read_ids.add(aln.query_name) # type: ignore
                 if aln.is_unmapped:
                     unmapped_tag = self._unmapped_type(str(aln.get_tag("uT")))
                     try:
                         map_stats[unmapped_tag] += 1
                     except KeyError:
                         map_stats[unmapped_tag] = 1
+                    map_stats["Input reads"] += 1
+                    continue
+                if aln.is_qcfail or aln.is_secondary or aln.is_supplementary or aln.mapping_quality < self.min_q:
+                    continue
+                map_stats["Input reads"] += 1
+                map_stats["Mapped: Total"] += 1
+                if aln.is_duplicate:
+                    map_stats["Mapped: PCR duplicate reads"] += 1
                 else:
-                    map_stats["Total aligned"] += 1
-                    if aln.is_duplicate:
-                        map_stats["PCR duplicate"] += 1
-                    else:
-                        map_stats["Unique"] += 1
+                    map_stats["Mapped: Unique reads"] += 1
+                try:
+                    n_aln = aln.get_tag("NH")
+                except KeyError:
+                    n_aln = 0
+                    pass
+                if n_aln == 1:
+                    map_stats["Mapped: Uniquely mapped reads"] += 1
+                elif n_aln > 1: # type: ignore
+                    map_stats["Mapped: Multimapped reads"] += 1
+        print(map_stats)
         self._to_json(map_stats, out_json)
 
     def STAR_alignment_stats_rs(self, out_json: str) -> None:
