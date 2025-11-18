@@ -14,7 +14,9 @@ RUN apt-get update \
 
 FROM python:3.12-slim-trixie
 COPY --from=build /mad_statter/dist/* /tmp/
-RUN cd /tmp/ \
+RUN apt-get update \
+    && apt-get install procps -y \
+    && cd /tmp/ \
     && ls *.whl| xargs -I whl pip install --no-cache-dir whl \
     && rm -rf *.whl \
     && pip cache purge
