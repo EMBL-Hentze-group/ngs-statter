@@ -5,6 +5,10 @@ import subprocess
 import zipfile
 from pathlib import Path
 
+""" 
+Note: this build script is invoked by Poetry during the build process
+source: https://python-poetry.org/docs/building-extension-modules/#maturin-build-script
+"""
 
 def maturin(*args):
     subprocess.call(["maturin", *list(args)])
@@ -32,9 +36,9 @@ def build():
         whl.extractall(wheels_dir.as_posix())
 
         for extension in wheels_dir.rglob("**/*.so"):
-            shutil.copyfile(extension, Path(__file__).parent.joinpath(extension.name))
+            shutil.copyfile(extension, build_dir.joinpath(extension.name))
 
-    shutil.rmtree(wheels_dir)
+    # shutil.rmtree(wheels_dir)
 
 
 if __name__ == "__main__":
