@@ -10,6 +10,7 @@ RUN apt-get update \
     && cd mad_statter \
     && poetry config virtualenvs.create false \
     && poetry install  \
+    && poetry run maturin develop --release  \
     && poetry build
 
 FROM python:3.12-slim-trixie
