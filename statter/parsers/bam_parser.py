@@ -7,7 +7,8 @@ from typing import Any, Dict, List
 import pysam
 
 from statter.parsers.gff_parser import Gene
-from statter.statter import alignment_stats, gene_type_read_dist, star_bam_stats
+from statter.statter import (alignment_stats, gene_type_read_dist,
+                             star_bam_stats)
 
 
 class BamParser:
@@ -182,7 +183,6 @@ class BamParser:
                     map_stats["Mapped: Uniquely mapped reads"] += 1
                 elif n_aln > 1: # type: ignore
                     map_stats["Mapped: Multimapped reads"] += 1
-        print(map_stats)
         self._to_json(map_stats, out_json)
 
     def STAR_alignment_stats_rs(self, out_json: str) -> None:
