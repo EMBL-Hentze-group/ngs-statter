@@ -8,7 +8,6 @@ RUN apt-get update \
     && curl https://sh.rustup.rs -sSf |  sh -s -- --default-toolchain stable -y \
     && pip install --no-cache-dir poetry \
     && cd mad_statter \
-    && poetry config virtualenvs.create false \
     && poetry install  \
     && poetry run maturin develop --release  \
     && poetry build
