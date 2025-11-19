@@ -6,9 +6,9 @@ from typing import Any, Dict, List
 
 import pysam
 
+from statter.json_models.sample_stats import StarStats
 from statter.parsers.gff_parser import Gene
-from statter.statter import (alignment_stats, gene_type_read_dist,
-                             star_bam_stats)
+from statter.statter import alignment_stats, gene_type_read_dist, star_bam_stats
 
 
 class BamParser:
@@ -67,7 +67,7 @@ class BamParser:
         if Path(out_file).exists():
             logging.warning(f"Over-writing file {out_file}")
         with open(out_file, "w") as jh:
-            json.dump(stat_data, jh)
+            json.dump(stat_data, jh, indent=1)
 
     def read_length_stats_per_gene_type(
         self, genes: Dict[str, List[Gene]], out_json: str
@@ -145,28 +145,41 @@ class BamParser:
         """
         Write STAR alignment stats to json
         """
-        map_stats = {"Mapped: Uniquely mapped reads": 0,
-                    "Mapped: PCR duplicate reads": 0,
-                    "Mapped: Unique reads": 0,
-                    "Mapped: Total": 0,
-                    "Input reads": 0,
-                    "Mapped: Multimapped reads": 0}
-        read_ids:set[str] = set()
+        map_stats = {
+            "Input reads": 0,
+            "Mapped: Total": 0,
+            "Mapped: Multimapped reads": 0,
+            "Mapped: Uniquely mapped reads": 0,
+            "Mapped: PCR duplicate reads": 0,
+            "Mapped: Unique reads": 0,
+            "Unmapped: Total": 0,
+        }
         with pysam.AlignmentFile(self.bam, "rb") as bh:
             for aln in bh:
-                if aln.is_paired:
-                    if aln.query_name in read_ids:
-                        continue
-                    read_ids.add(aln.query_name) # type: ignore
+                if aln.is_paired and not aln.is_read1:
+                    continue
                 if aln.is_unmapped:
-                    unmapped_tag = self._unmapped_type(str(aln.get_tag("uT")))
+                    map_stats["Unmapped: Total"] += 1
+                    map_stats["Input reads"] += 1
+                    try:
+                        ut_tag = aln.get_tag("uT")
+                    except KeyError:
+                        logging.warning(
+                            "Cannot find 'uT' tag in the bam file! Check if the bam file was generated using STAR aligner."
+                        )
+                        continue
+                    unmapped_tag = self._unmapped_type(str(ut_tag))
                     try:
                         map_stats[unmapped_tag] += 1
                     except KeyError:
                         map_stats[unmapped_tag] = 1
-                    map_stats["Input reads"] += 1
                     continue
-                if aln.is_qcfail or aln.is_secondary or aln.is_supplementary or aln.mapping_quality < self.min_q:
+                if (
+                    aln.is_qcfail
+                    or aln.is_secondary
+                    or aln.is_supplementary
+                    or aln.mapping_quality < self.min_q
+                ):
                     continue
                 map_stats["Input reads"] += 1
                 map_stats["Mapped: Total"] += 1
@@ -181,9 +194,16 @@ class BamParser:
                     pass
                 if n_aln == 1:
                     map_stats["Mapped: Uniquely mapped reads"] += 1
-                elif n_aln > 1: # type: ignore
+                elif n_aln > 1:  # type: ignore
                     map_stats["Mapped: Multimapped reads"] += 1
-        self._to_json(map_stats, out_json)
+        if map_stats["Mapped: Unique reads"] == map_stats["Mapped: Total"]:
+            # most likely no PCR duplicate marking was done, set values to None
+            del map_stats["Mapped: PCR duplicate reads"]
+            del map_stats["Mapped: Unique reads"]
+        if map_stats["Unmapped: Total"] == 0:
+            # most likely deduplicated bam with no unmapped reads
+            del map_stats["Unmapped: Total"]
+        self._to_json(StarStats(**map_stats).model_dump(), out_json)
 
     def STAR_alignment_stats_rs(self, out_json: str) -> None:
         map_stats = star_bam_stats(self.bam, self.min_q)
@@ -354,7 +374,7 @@ class BamParser:
             "0": "Unmapped: no seed/windows",
             "1": "Unmapped: too short",
             "2": "Unmapped: too many mismatches",
-            "3": "Multimapping: mapped to too many loci",
+            "3": "Unmapped: mapped to too many loci",
             "4": "Unmapped: paired-end mate",
         }
         try:
