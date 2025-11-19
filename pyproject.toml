@@ -1,6 +1,6 @@
 [project]
 name = "statter"
-version = "0.5.8"
+version = "0.5.12"
 description = ""
 authors = [
     {name = "sahadeva",email = "sudeep.sahadevan@embl.de"}
@@ -39,6 +39,8 @@ sourmash_report_aggregator = "statter.scripts.sourmash_metagenome_parser:sourmas
 fastp_stats_aggregator = "statter.scripts.read_length_stats:fastp_stats_aggregator"
 sample_stats = "statter.scripts.all_stats:sample_stats"
 gather_sample_stats = "statter.scripts.all_stats:gather_sample_stats"
+all_stats = "statter.scripts.collect_stats:all_stats"
+compile_stats = "statter.scripts.collect_stats:compile_stats"
 
 [tool.poetry.build]
 script = "build-extension.py"
