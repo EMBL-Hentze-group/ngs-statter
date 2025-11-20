@@ -66,25 +66,14 @@ class BamParser:
             "Mapped: Unique reads": 0,
             "Unmapped: Total": 0,
         }  # place holders for STAR alignment stats
-        self._map_keys = set(
+        self._must_keys = set(
             [
                 "Input reads",
                 "Mapped: Total",
                 "Mapped: Multimapped reads",
                 "Mapped: Uniquely mapped reads",
-                "Mapped: PCR duplicate reads",
-                "Mapped: Unique reads",
             ]
         )  # these are mandatory keys
-        self._unmap_keys = set(
-            [
-                "Unmapped: Total",
-                "Unmapped: too short",
-                "Unmapped: mapped to too many loci",
-                "Unmapped: no seed/windows",
-                "Unmapped: paired-end mate",
-            ]
-        )  # these are optional keys, some of these may not be present in all bam files
 
     @staticmethod
     def _to_json(stat_data: Any, out_file: str) -> None:
@@ -218,32 +207,7 @@ class BamParser:
                     self._map_stats["Mapped: Uniquely mapped reads"] += 1
                 elif n_aln > 1:  # type: ignore
                     self._map_stats["Mapped: Multimapped reads"] += 1
-        self._check_map_stats()
         self._to_json(StarStats(**self._map_stats).model_dump(), out_json)
-
-    def _check_map_stats(self) -> None:
-        """_check_map_stats
-        Helper function.
-        Check entries in map_stats dictionary and remove them
-        """
-        if (
-            "Mapped: Unique reads" in self._map_stats
-            and "Mapped: PCR duplicate reads" in self._map_stats
-        ):
-            if (
-                self._map_stats["Mapped: Unique reads"]
-                == self._map_stats["Mapped: Total"]
-            ):
-                # most likely no PCR duplicate marking was done, set values to None
-                del self._map_stats["Mapped: PCR duplicate reads"]
-                del self._map_stats["Mapped: Unique reads"]
-        if "Unmapped: Total" in self._map_stats:
-            if self._map_stats["Unmapped: Total"] == 0:
-                # most likely deduplicated bam with no unmapped reads, set value to None and issue warning
-                logging.warning(
-                    "No unmapped reads found. This is likely a deduplicated BAM file."
-                )
-                del self._map_stats["Unmapped: Total"]
 
     def STAR_alignment_stats_rs(self, out_json: str) -> None:
         """STAR_alignment_stats_rs
@@ -260,19 +224,12 @@ class BamParser:
             raise RuntimeError(
                 f"Cannot parse alignment stats from {self.bam}! Check your input file"
             )
-        diff_keys = self._map_keys - set(self._map_stats.keys())
+        diff_keys = self._must_keys - set(self._map_stats.keys())
         if len(diff_keys) > 0:
             missing_keys = ", ".join(diff_keys)
             raise RuntimeError(
                 f"Cannot find the following values: {missing_keys} from {self.bam}. Check your input bam file!"
             )
-        diff_keys = self._unmap_keys - set(self._map_stats.keys())
-        if len(diff_keys) > 0:
-            missing_keys = ", ".join(diff_keys)
-            logging.warning(
-                f"Cannot find the following values: {missing_keys} from {self.bam}. These values will be set to 0!"
-            )
-        self._check_map_stats()
         self._to_json(StarStats(**self._map_stats).model_dump(), out_json)
 
     def alignment_stats_rs(self, out_json: str) -> None:
