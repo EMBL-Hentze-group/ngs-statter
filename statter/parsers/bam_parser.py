@@ -226,16 +226,24 @@ class BamParser:
         Helper function.
         Check entries in map_stats dictionary and remove them
         """
-        if self._map_stats["Mapped: Unique reads"] == self._map_stats["Mapped: Total"]:
-            # most likely no PCR duplicate marking was done, set values to None
-            del self._map_stats["Mapped: PCR duplicate reads"]
-            del self._map_stats["Mapped: Unique reads"]
-        if self._map_stats["Unmapped: Total"] == 0:
-            # most likely deduplicated bam with no unmapped reads, set value to None and issue warning
-            logging.warning(
-                "No unmapped reads found. This is likely a deduplicated BAM file."
-            )
-            del self._map_stats["Unmapped: Total"]
+        if (
+            "Mapped: Unique reads" in self._map_stats
+            and "Mapped: PCR duplicate reads" in self._map_stats
+        ):
+            if (
+                self._map_stats["Mapped: Unique reads"]
+                == self._map_stats["Mapped: Total"]
+            ):
+                # most likely no PCR duplicate marking was done, set values to None
+                del self._map_stats["Mapped: PCR duplicate reads"]
+                del self._map_stats["Mapped: Unique reads"]
+        if "Unmapped: Total" in self._map_stats:
+            if self._map_stats["Unmapped: Total"] == 0:
+                # most likely deduplicated bam with no unmapped reads, set value to None and issue warning
+                logging.warning(
+                    "No unmapped reads found. This is likely a deduplicated BAM file."
+                )
+                del self._map_stats["Unmapped: Total"]
 
     def STAR_alignment_stats_rs(self, out_json: str) -> None:
         """STAR_alignment_stats_rs
