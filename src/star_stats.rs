@@ -1,8 +1,6 @@
 use rust_htslib::{bam, bam::record::Aux, bam::Read};
 use std::collections::HashMap;
-// use std::collections::{HashMap, HashSet};
-// use std::fs::File;
-// use std::io::{BufRead, BufReader};
+
 // read bam file created using STAR and parse alignment stats
 
 // return unmapped kind, source: STAR documentation
@@ -12,7 +10,7 @@ fn unmapped_kind(ut: &char) -> String {
         '0' => String::from("Unmapped: no seed/windows"),
         '1' => String::from("Unmapped: too short"),
         '2' => String::from("Unmapped: too many mismatches"),
-        '3' => String::from("Multimapping: mapped to too many loci"),
+        '3' => String::from("Unmapped: mapped to too many loci"),
         '4' => String::from("Unmapped: paired-end mate"),
         _ => String::from("Unknown"),
     }
@@ -67,6 +65,9 @@ pub fn bam_stats(bam: &str, min_q: u8) -> HashMap<String, u32> {
             Ok(asg) => asg,
             Err(e) => panic!("Cannot parse bam records {}", e.to_string()),
         };
+        if asg.is_paired() && !asg.is_first_in_template() {
+            continue;
+        }
         if asg.is_unmapped() {
             let ut = match asg.aux(b"uT") {
                 Ok(v) => match v {
@@ -85,7 +86,8 @@ pub fn bam_stats(bam: &str, min_q: u8) -> HashMap<String, u32> {
             || asg.mapq() < min_q
         {
             continue;
-        } else if asg.is_duplicate() {
+        } 
+        if asg.is_duplicate() {
             *map_stat
                 .entry(String::from("Mapped: PCR duplicate reads"))
                 .or_insert(0) += 1;
