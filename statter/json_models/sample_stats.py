@@ -56,6 +56,25 @@ class StarStats(BaseModel):
         populate_by_name=True,
     )
 
+    def model_post_init(self, *args, **kwargs):
+        """model_post_init
+        sources:
+            https://docs.pydantic.dev/latest/api/base_model/#pydantic.BaseModel.model_post_init
+            https://www.slingacademy.com/article/pydantic-model_post_init-method/
+        """
+        if self.mapped_total == self.mapped_unique_reads:
+            # probably no PCR duplicate flags are set in bam files
+            self.mapped_unique_reads = None
+            self.mapped_PCR_duplicate_reads = None
+        if self.unmapped_total == 0:
+            # probably coming from deduplicated bam files
+            self.unmapped_total = None
+            self.unmapped_mapped_to_too_many_loci = None
+            self.unmapped_no_seed_windows = None
+            self.unmapped_too_many_mismatches = None
+            self.unmapped_too_short = None
+            self.unmapped_paired_end_mate = None
+
 
 class UmiStats(BaseModel):
     """UMIStats
