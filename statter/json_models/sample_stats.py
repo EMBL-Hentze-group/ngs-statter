@@ -51,7 +51,10 @@ class StarStats(BaseModel):
     unmapped_paired_end_mate: Optional[int] = Field(
         default=None, alias="Unmapped: paired-end mate"
     )
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(
+        extra="allow",
+        populate_by_name=True,
+    )
 
 
 class UmiStats(BaseModel):
@@ -68,7 +71,10 @@ class UmiStats(BaseModel):
     umi_mapped_multimapped_reads: Optional[int] = Field(
         default=None, alias="Mapped: Multimapped reads (UMI dedup)"
     )
-    model_config = ConfigDict(extra="allow")
+    model_config = ConfigDict(
+        extra="allow",
+        populate_by_name=True,
+    )
 
 
 class AllStats(UmiStats, StarStats, BaseStats):
