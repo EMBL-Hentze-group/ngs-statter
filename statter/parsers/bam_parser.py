@@ -57,6 +57,34 @@ class BamParser:
         self.bam = bam
         self.min_q = min_q
         self.ignore_duplicate = ignore_duplicate
+        self._map_stats: Dict[str, int] = {
+            "Input reads": 0,
+            "Mapped: Total": 0,
+            "Mapped: Multimapped reads": 0,
+            "Mapped: Uniquely mapped reads": 0,
+            "Mapped: PCR duplicate reads": 0,
+            "Mapped: Unique reads": 0,
+            "Unmapped: Total": 0,
+        }  # place holders for STAR alignment stats
+        self._map_keys = set(
+            [
+                "Input reads",
+                "Mapped: Total",
+                "Mapped: Multimapped reads",
+                "Mapped: Uniquely mapped reads",
+                "Mapped: PCR duplicate reads",
+                "Mapped: Unique reads",
+            ]
+        )  # these are mandatory keys
+        self._unmap_keys = set(
+            [
+                "Unmapped: Total",
+                "Unmapped: too short",
+                "Unmapped: mapped to too many loci",
+                "Unmapped: no seed/windows",
+                "Unmapped: paired-end mate",
+            ]
+        )  # these are optional keys, some of these may not be present in all bam files
 
     @staticmethod
     def _to_json(stat_data: Any, out_file: str) -> None:
@@ -142,25 +170,19 @@ class BamParser:
         self._to_json(gene_type_dist, out_json)
 
     def STAR_alignment_stats(self, out_json: str) -> None:
+        """STAR_alignment_stats
+        Parse bam file from STAR aligner for alignment stats
+
+        Args:
+            out_json: json file name to write the alignment stats
         """
-        Write STAR alignment stats to json
-        """
-        map_stats = {
-            "Input reads": 0,
-            "Mapped: Total": 0,
-            "Mapped: Multimapped reads": 0,
-            "Mapped: Uniquely mapped reads": 0,
-            "Mapped: PCR duplicate reads": 0,
-            "Mapped: Unique reads": 0,
-            "Unmapped: Total": 0,
-        }
         with pysam.AlignmentFile(self.bam, "rb") as bh:
             for aln in bh:
                 if aln.is_paired and not aln.is_read1:
                     continue
                 if aln.is_unmapped:
-                    map_stats["Unmapped: Total"] += 1
-                    map_stats["Input reads"] += 1
+                    self._map_stats["Unmapped: Total"] += 1
+                    self._map_stats["Input reads"] += 1
                     try:
                         ut_tag = aln.get_tag("uT")
                     except KeyError:
@@ -170,9 +192,9 @@ class BamParser:
                         continue
                     unmapped_tag = self._unmapped_type(str(ut_tag))
                     try:
-                        map_stats[unmapped_tag] += 1
+                        self._map_stats[unmapped_tag] += 1
                     except KeyError:
-                        map_stats[unmapped_tag] = 1
+                        self._map_stats[unmapped_tag] = 1
                     continue
                 if (
                     aln.is_qcfail
@@ -181,138 +203,69 @@ class BamParser:
                     or aln.mapping_quality < self.min_q
                 ):
                     continue
-                map_stats["Input reads"] += 1
-                map_stats["Mapped: Total"] += 1
+                self._map_stats["Input reads"] += 1
+                self._map_stats["Mapped: Total"] += 1
                 if aln.is_duplicate:
-                    map_stats["Mapped: PCR duplicate reads"] += 1
+                    self._map_stats["Mapped: PCR duplicate reads"] += 1
                 else:
-                    map_stats["Mapped: Unique reads"] += 1
+                    self._map_stats["Mapped: Unique reads"] += 1
                 try:
                     n_aln = aln.get_tag("NH")
                 except KeyError:
                     n_aln = 0
                     pass
                 if n_aln == 1:
-                    map_stats["Mapped: Uniquely mapped reads"] += 1
+                    self._map_stats["Mapped: Uniquely mapped reads"] += 1
                 elif n_aln > 1:  # type: ignore
-                    map_stats["Mapped: Multimapped reads"] += 1
-        if map_stats["Mapped: Unique reads"] == map_stats["Mapped: Total"]:
+                    self._map_stats["Mapped: Multimapped reads"] += 1
+        self._check_map_stats()
+        self._to_json(StarStats(**self._map_stats).model_dump(), out_json)
+
+    def _check_map_stats(self) -> None:
+        """_check_map_stats
+        Helper function.
+        Check entries in map_stats dictionary and remove them
+        """
+        if self._map_stats["Mapped: Unique reads"] == self._map_stats["Mapped: Total"]:
             # most likely no PCR duplicate marking was done, set values to None
-            del map_stats["Mapped: PCR duplicate reads"]
-            del map_stats["Mapped: Unique reads"]
-        if map_stats["Unmapped: Total"] == 0:
-            # most likely deduplicated bam with no unmapped reads
-            del map_stats["Unmapped: Total"]
-        self._to_json(StarStats(**map_stats).model_dump(), out_json)
+            del self._map_stats["Mapped: PCR duplicate reads"]
+            del self._map_stats["Mapped: Unique reads"]
+        if self._map_stats["Unmapped: Total"] == 0:
+            # most likely deduplicated bam with no unmapped reads, set value to None and issue warning
+            logging.warning(
+                "No unmapped reads found. This is likely a deduplicated BAM file."
+            )
+            del self._map_stats["Unmapped: Total"]
 
     def STAR_alignment_stats_rs(self, out_json: str) -> None:
-        map_stats = star_bam_stats(self.bam, self.min_q)
-        if len(map_stats) == 0:
+        """STAR_alignment_stats_rs
+        Parse bam file from STAR aligner for alignment stats using rust function
+        Args:
+            out_json: json file name to write the alignment stats
+
+        Raises:
+            RuntimeError: If alignment statistics cannot be parsed from the BAM file.
+            RuntimeError: If any required values are missing from the alignment statistics.
+        """
+        self._map_stats = star_bam_stats(self.bam, self.min_q)
+        if len(self._map_stats) == 0:
             raise RuntimeError(
                 f"Cannot parse alignment stats from {self.bam}! Check your input file"
             )
-        map_keys = set(
-            [
-                "Mapped: Uniquely mapped reads",
-                "Mapped: PCR duplicate reads",
-                "Mapped: Unique reads",
-                "Mapped: Total",
-                "Input reads",
-                "Mapped: Multimapped reads",
-            ]
-        )
-        unmap_keys = set(
-            [
-                "Unmapped: too short",
-                "Unmapped: Total",
-                "Multimapping: mapped to too many loci",
-                "Unmapped: no seed/windows",
-            ]
-        )
-        diff_keys = map_keys - set(map_stats.keys())
+        diff_keys = self._map_keys - set(self._map_stats.keys())
         if len(diff_keys) > 0:
             missing_keys = ", ".join(diff_keys)
             raise RuntimeError(
                 f"Cannot find the following values: {missing_keys} from {self.bam}. Check your input bam file!"
             )
-        diff_keys = unmap_keys - set(map_stats.keys())
+        diff_keys = self._unmap_keys - set(self._map_stats.keys())
         if len(diff_keys) > 0:
             missing_keys = ", ".join(diff_keys)
             logging.warning(
                 f"Cannot find the following values: {missing_keys} from {self.bam}. These values will be set to 0!"
             )
-            for dk in diff_keys:
-                map_stats[dk] = 0
-        out_stats: OrderedDict[str, int | float] = OrderedDict()
-        out_stats["Input reads"] = map_stats["Input reads"]
-        out_stats["Mapped: Total"] = map_stats["Mapped: Total"]
-        # mapped
-        out_stats["Mapped: Total %"] = round(
-            float(map_stats["Mapped: Total"]) * 100 / map_stats["Input reads"], 3
-        )
-        # unique reads
-        out_stats["Mapped: Unique reads"] = map_stats["Mapped: Unique reads"]
-        out_stats["Mapped: Unique reads %"] = round(
-            float(map_stats["Mapped: Unique reads"]) * 100 / map_stats["Input reads"], 3
-        )
-        # pcr duplicates
-        out_stats["Mapped: PCR duplicate reads"] = map_stats[
-            "Mapped: PCR duplicate reads"
-        ]
-        out_stats["Mapped: PCR duplicate reads %"] = round(
-            float(map_stats["Mapped: PCR duplicate reads"])
-            * 100
-            / map_stats["Input reads"],
-            3,
-        )
-        # uniquely mapped reads
-        out_stats["Mapped: Uniquely mapped reads"] = map_stats[
-            "Mapped: Uniquely mapped reads"
-        ]
-        out_stats["Mapped: Uniquely mapped reads %"] = round(
-            float(map_stats["Mapped: Uniquely mapped reads"])
-            * 100
-            / map_stats["Input reads"],
-            3,
-        )
-        # multimapped reads
-        out_stats["Mapped: Multimapped reads"] = map_stats["Mapped: Multimapped reads"]
-        out_stats["Mapped: Multimapped reads %"] = round(
-            float(map_stats["Mapped: Multimapped reads"])
-            * 100
-            / map_stats["Input reads"],
-            3,
-        )
-        # unmapped
-        out_stats["Unmapped: Total"] = map_stats["Unmapped: Total"]
-        out_stats["Unmapped: Total %"] = round(
-            float(map_stats["Unmapped: Total"]) * 100 / map_stats["Input reads"], 3
-        )
-        # Multimapping: mapped to too many loci
-        out_stats["Unmapped: mapped to too many loci"] = map_stats[
-            "Multimapping: mapped to too many loci"
-        ]
-        out_stats["Unmapped: mapped to too many loci %"] = round(
-            float(map_stats["Multimapping: mapped to too many loci"])
-            * 100
-            / map_stats["Input reads"],
-            3,
-        )
-        # Unmapped: no seed/windows
-        out_stats["Unmapped: no seed/windows"] = map_stats["Unmapped: no seed/windows"]
-        out_stats["Unmapped: no seed/windows %"] = round(
-            float(map_stats["Unmapped: no seed/windows"])
-            * 100
-            / map_stats["Input reads"],
-            3,
-        )
-        # Unmapped: too short
-        out_stats["Unmapped: too short"] = map_stats["Unmapped: too short"]
-        out_stats["Unmapped: too short %"] = round(
-            float(map_stats["Unmapped: too short"]) * 100 / map_stats["Input reads"],
-            3,
-        )
-        self._to_json(out_stats, out_json)
+        self._check_map_stats()
+        self._to_json(StarStats(**self._map_stats).model_dump(), out_json)
 
     def alignment_stats_rs(self, out_json: str) -> None:
         """
