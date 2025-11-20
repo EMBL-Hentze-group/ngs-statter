@@ -1,11 +1,4 @@
-import re
-from dis import show_code
-from email.policy import default
-from multiprocessing import context
-from typing import Optional
-
 import click
-from numpy import require
 
 from statter.parsers.stats_collector import (
     SampleStats,
@@ -109,17 +102,6 @@ def all_stats(
 ):
     """all_stats
     Collect statistics from various steps and compile into a single json file
-
-    Args:
-        sample_name: Sample name
-        raw_reads: Path to seqkit stats output for raw reads
-        first_trim: Path to seqkit stats output for first trimming step
-        second_trim: [Optional] Path to seqkit stats output for second trimming step
-        rRNA_mapped: [Optional] Path to seqkit stats output for rRNA mapped reads
-        rRNA_free: [Optional] Path to seqkit stats output for rRNA free reads
-        align: Path to bam statistics json file
-        dedup: [Optional] Path to bam statistics json file after UMI deduplication
-        output: Output json file for collected statistics
     """
     stats_collector = SampleStats(
         sample=sample_name,
@@ -153,9 +135,6 @@ def all_stats(
 )
 def compile_stats(output, files):
     """
-    Collect statistics from multiple samples and compile into a single json file
-
-    Args:
-        files: List of files to process. [output json files from `all_stats -h`]
+    Collect statistics from multiple samples and compile into a single tsv file
     """
     compile_all_sample_stats(output, list(files))
