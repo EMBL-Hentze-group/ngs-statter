@@ -96,7 +96,23 @@ class UmiStats(BaseModel):
     )
 
 
-class AllStats(UmiStats, StarStats, BaseStats):
+class KrakenStats(BaseModel):
+    """KrakenStats
+    Pydantic model for kraken2 classification statistics
+    """
+
+    classified: Optional[int] = Field(default=None, alias="Kraken2: Classified reads")
+    unclassified: Optional[int] = Field(
+        default=None, alias="Kraken2: Unclassified reads"
+    )
+
+    model_config = ConfigDict(
+        extra="allow",
+        populate_by_name=True,
+    )
+
+
+class AllStats(KrakenStats, UmiStats, StarStats, BaseStats):
     """AllStats
     Pydantic model combining BaseStats, Stats and UMI_Stats
     for comprehensive sample statistics from raw reads to alignment stats or deduplicated alignment stats.
