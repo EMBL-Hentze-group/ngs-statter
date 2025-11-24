@@ -22,6 +22,7 @@ class SampleStats:
         rRNA_free: Optional[str] = None,
         rRNA_mapped: Optional[str] = None,
         dedup: Optional[str] = None,
+        kraken2: Optional[str] = None,
     ) -> None:
         self.out = out
         self._all_stats = AllStats(
@@ -40,6 +41,12 @@ class SampleStats:
         if dedup:
             self._dedup_stats: StarStats = self._json_reader(dedup)
             self._update_dedup_stats()
+        self._classified: Optional[int] = None
+        self._unclassified: Optional[int] = None
+        if kraken2:
+            self._parse_kraken2_report(kraken2)
+            self._all_stats.classified = self._classified
+            self._all_stats.unclassified = self._unclassified
 
     @staticmethod
     def _seqkit_reader(fname: str) -> int:
@@ -89,6 +96,43 @@ class SampleStats:
         self._all_stats.umi_mapped_multimapped_reads = (
             self._dedup_stats.mapped_multimapped_reads
         )
+
+    def _parse_kraken2_report(self, kraken2: str) -> None:
+        """_parse_kraken2_report Helper function
+        Parse kraken2 report to get classified and unclassified read counts
+        Kranen2 report format: https://github.com/DerrickWood/kraken2/wiki/Manual
+        """
+        report: pd.DataFrame = pd.read_csv(
+            kraken2,
+            sep="\t",
+            header=None,
+            names=[
+                "percent",
+                "num_reads_clade",
+                "num_reads_taxon",
+                "rank",
+                "tax_id",
+                "name",
+            ],
+        )
+        try:
+            self._classified = int(
+                report.loc[report["rank"] == "R", "num_reads_clade"].item()
+            )
+        except ValueError:
+            logging.warning(
+                f"Could not find classified reads in kraken2 report: {kraken2}!"
+            )
+            pass
+        try:
+            self._unclassified = int(
+                report.loc[report["rank"] == "U", "num_reads_clade"].item()
+            )
+        except ValueError:
+            logging.warning(
+                f"Could not find unclassified reads in kraken2 report: {kraken2}!"
+            )
+            pass
 
     def to_json(self) -> None:
         """to_json
