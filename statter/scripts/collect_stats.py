@@ -82,6 +82,16 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
     type=click.Path(exists=True, file_okay=True, dir_okay=False),
 )
 @click.option(
+    "--kraken2_report",
+    "-k",
+    "kraken2",
+    help="Path to kraken2 report file [Optional]",
+    required=False,
+    default=None,
+    show_default=True,
+    type=click.Path(exists=True, file_okay=True, dir_okay=False),
+)
+@click.option(
     "--output",
     "-o",
     "output",
@@ -98,6 +108,7 @@ def all_stats(
     rRNA_free,
     align,
     dedup,
+    kraken2,
     output,
 ):
     """all_stats
@@ -113,6 +124,7 @@ def all_stats(
         rRNA_free=rRNA_free,
         rRNA_mapped=rRNA_mapped,
         dedup=dedup,
+        kraken2=kraken2,
     )
     stats_collector.to_json()
 
