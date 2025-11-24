@@ -54,12 +54,16 @@ fn unmapped_kind(ut: &char) -> String {
 /// The `map_stat` HashMap is then returned as the result.
 ///
 pub fn bam_stats(bam: &str, min_q: u8) -> HashMap<String, u32> {
-    let mut map_stat: HashMap<String, u32> = HashMap::new();
+    let mut map_stat: HashMap<String, u32> = HashMap::from_iter([
+        (String::from("Reads for mapping"), 0),
+        (String::from("Mapped: Total"), 0),
+        (String::from("Mapped: Uniquely mapped reads"), 0),
+        (String::from("Mapped: Multimapped reads"), 0),
+    ]);
     let mut star_bam: bam::Reader = match bam::Reader::from_path(bam) {
         Ok(sbam) => sbam,
         Err(e) => panic!("Cannot read {}: {}", bam, e.to_string()),
     };
-    map_stat.insert(String::from("Mapped: PCR duplicate reads"), 0);
     for aln in star_bam.records() {
         let asg: bam::Record = match aln {
             Ok(asg) => asg,
@@ -78,7 +82,7 @@ pub fn bam_stats(bam: &str, min_q: u8) -> HashMap<String, u32> {
             };
             *map_stat.entry(unmapped_kind(&ut)).or_insert(0) += 1;
             *map_stat.entry(String::from("Unmapped: Total")).or_insert(0) += 1;
-            *map_stat.entry(String::from("Input reads")).or_insert(0) += 1;
+            *map_stat.get_mut("Reads for mapping").unwrap() += 1;
             continue;
         } else if asg.is_secondary()
             || asg.is_supplementary()
@@ -104,16 +108,12 @@ pub fn bam_stats(bam: &str, min_q: u8) -> HashMap<String, u32> {
             Err(_) => panic!("Cannot parse alignment info from 'NH' tags: {}", bam),
         };
         if nh > 1 {
-            *map_stat
-                .entry(String::from("Mapped: Multimapped reads"))
-                .or_insert(0) += 1;
+            *map_stat.get_mut("Mapped: Multimapped reads").unwrap()+=1;
         } else {
-            *map_stat
-                .entry(String::from("Mapped: Uniquely mapped reads"))
-                .or_insert(0) += 1;
+            *map_stat.get_mut("Mapped: Uniquely mapped reads").unwrap() += 1;
         }
-        *map_stat.entry(String::from("Mapped: Total")).or_insert(0) += 1;
-        *map_stat.entry(String::from("Input reads")).or_insert(0) += 1;
+        *map_stat.get_mut("Mapped: Total").unwrap() += 1;
+        *map_stat.get_mut("Reads for mapping").unwrap() += 1;
     }
     map_stat
 }
