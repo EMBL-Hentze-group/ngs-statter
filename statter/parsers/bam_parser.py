@@ -58,7 +58,7 @@ class BamParser:
         self.min_q = min_q
         self.ignore_duplicate = ignore_duplicate
         self._map_stats: Dict[str, int] = {
-            "Input reads": 0,
+            "Reads for mapping": 0,
             "Mapped: Total": 0,
             "Mapped: Multimapped reads": 0,
             "Mapped: Uniquely mapped reads": 0,
@@ -68,7 +68,7 @@ class BamParser:
         }  # place holders for STAR alignment stats
         self._must_keys = set(
             [
-                "Input reads",
+                "Reads for mapping",
                 "Mapped: Total",
                 "Mapped: Multimapped reads",
                 "Mapped: Uniquely mapped reads",
@@ -171,7 +171,7 @@ class BamParser:
                     continue
                 if aln.is_unmapped:
                     self._map_stats["Unmapped: Total"] += 1
-                    self._map_stats["Input reads"] += 1
+                    self._map_stats["Reads for mapping"] += 1
                     try:
                         ut_tag = aln.get_tag("uT")
                     except KeyError:
@@ -192,7 +192,7 @@ class BamParser:
                     or aln.mapping_quality < self.min_q
                 ):
                     continue
-                self._map_stats["Input reads"] += 1
+                self._map_stats["Reads for mapping"] += 1
                 self._map_stats["Mapped: Total"] += 1
                 if aln.is_duplicate:
                     self._map_stats["Mapped: PCR duplicate reads"] += 1

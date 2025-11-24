@@ -21,7 +21,7 @@ class StarStats(BaseModel):
     Pydantic model for STAR alignment statistics
     """
 
-    input_reads: int = Field(default=0, alias="Input reads")
+    input_reads: int = Field(default=0, alias="Reads for mapping")
     # mapped reads
     mapped_total: int = Field(default=0, alias="Mapped: Total")
     mapped_unique_reads: Optional[int] = Field(
