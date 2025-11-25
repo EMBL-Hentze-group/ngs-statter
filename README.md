@@ -1,7 +1,7 @@
 
 ## Mad statter
 
-version = "0.5.20"
+version = "0.5.21"
 
 A package to compute read/alignment statistics per fastq/bam file and parsers for niche formats. This will be eventually part of the *seq data analysis workflow. 
 
@@ -9,14 +9,12 @@ A package to compute read/alignment statistics per fastq/bam file and parsers fo
 - [x] Fastq parser
 - [x] GFF parser
 - [x] BAM parser
-- [x] single end unmapped fastq parser
-- [ ] paired end unmapped fastq parser
-- [x] [ganon](https://pirovc.github.io/ganon/) unclassified single end reads parser
 - [x] [kraken2](https://github.com/DerrickWood/kraken2/blob/master/docs/MANUAL.markdown) report aggregator
 - [x] [sourmash tax metagenome][https://sourmash.readthedocs.io/en/latest/classifying-signatures.html) Kraken style report aggregator
 
 - [x] [fastp](https://github.com/OpenGene/fastp) fastp trimming stats aggregator
 - [x] [STAR aligner](https://github.com/alexdobin/STAR) alignment stats to json
+- [x] parser fix UMI position in flexbar fastqs
 
 **Plotting functions**  
 - [x] Fastq read length distribution plot
