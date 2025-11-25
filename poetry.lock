@@ -49,6 +49,18 @@ tornado = {version = ">=6.2", markers = "sys_platform != \"emscripten\""}
 xyzservices = ">=2021.09.1"
 
 [[package]]
+name = "cfgv"
+version = "3.5.0"
+description = "Validate configuration and produce human readable error messages."
+optional = false
+python-versions = ">=3.10"
+groups = ["dev"]
+files = [
+    {file = "cfgv-3.5.0-py2.py3-none-any.whl", hash = "sha256:a8dc6b26ad22ff227d2634a65cb388215ce6cc96bbcc5cfde7641ae87e8dacc0"},
+    {file = "cfgv-3.5.0.tar.gz", hash = "sha256:d5b1034354820651caa73ede66a6294d6e95c1b00acc5e9b098e917404669132"},
+]
+
+[[package]]
 name = "click"
 version = "8.3.0"
 description = "Composable command line interface toolkit"
@@ -167,6 +179,45 @@ docs = ["furo", "sphinx (>=7.2)", "sphinx-copybutton"]
 mypy = ["bokeh", "contourpy[bokeh,docs]", "docutils-stubs", "mypy (==1.17.0)", "types-Pillow"]
 test = ["Pillow", "contourpy[test-no-images]", "matplotlib"]
 test-no-images = ["pytest", "pytest-cov", "pytest-rerunfailures", "pytest-xdist", "wurlitzer"]
+
+[[package]]
+name = "distlib"
+version = "0.4.0"
+description = "Distribution utilities"
+optional = false
+python-versions = "*"
+groups = ["dev"]
+files = [
+    {file = "distlib-0.4.0-py2.py3-none-any.whl", hash = "sha256:9659f7d87e46584a30b5780e43ac7a2143098441670ff0a49d5f9034c54a6c16"},
+    {file = "distlib-0.4.0.tar.gz", hash = "sha256:feec40075be03a04501a973d81f633735b4b69f98b05450592310c0f401a4e0d"},
+]
+
+[[package]]
+name = "filelock"
+version = "3.20.0"
+description = "A platform independent file lock."
+optional = false
+python-versions = ">=3.10"
+groups = ["dev"]
+files = [
+    {file = "filelock-3.20.0-py3-none-any.whl", hash = "sha256:339b4732ffda5cd79b13f4e2711a31b0365ce445d95d243bb996273d072546a2"},
+    {file = "filelock-3.20.0.tar.gz", hash = "sha256:711e943b4ec6be42e1d4e6690b48dc175c822967466bb31c0c293f34334c13f4"},
+]
+
+[[package]]
+name = "identify"
+version = "2.6.15"
+description = "File identification library for Python"
+optional = false
+python-versions = ">=3.9"
+groups = ["dev"]
+files = [
+    {file = "identify-2.6.15-py2.py3-none-any.whl", hash = "sha256:1181ef7608e00704db228516541eb83a88a9f94433a8c80bb9b5bd54b1d81757"},
+    {file = "identify-2.6.15.tar.gz", hash = "sha256:e4f4864b96c6557ef2a1e1c951771838f4edc9df3a72ec7118b338801b11c7bf"},
+]
+
+[package.extras]
+license = ["ukkonen"]
 
 [[package]]
 name = "jinja2"
@@ -395,6 +446,18 @@ example = ["cairocffi (>=1.7)", "contextily (>=1.6)", "igraph (>=0.11)", "momepy
 extra = ["lxml (>=4.6)", "pydot (>=3.0.1)", "pygraphviz (>=1.14)", "sympy (>=1.10)"]
 test = ["pytest (>=7.2)", "pytest-cov (>=4.0)", "pytest-xdist (>=3.0)"]
 test-extras = ["pytest-mpl", "pytest-randomly"]
+
+[[package]]
+name = "nodeenv"
+version = "1.9.1"
+description = "Node.js virtual environment builder"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7"
+groups = ["dev"]
+files = [
+    {file = "nodeenv-1.9.1-py2.py3-none-any.whl", hash = "sha256:ba11c9782d29c27c70ffbdda2d7415098754709be8a7056d79a737cd901155c9"},
+    {file = "nodeenv-1.9.1.tar.gz", hash = "sha256:6ec12890a2dab7946721edbfbcd91f3319c6ccc9aec47be7c7e6b7011ee6645f"},
+]
 
 [[package]]
 name = "numpy"
@@ -720,6 +783,42 @@ tests = ["check-manifest", "coverage (>=7.4.2)", "defusedxml", "markdown2", "ole
 xmp = ["defusedxml"]
 
 [[package]]
+name = "platformdirs"
+version = "4.5.0"
+description = "A small Python package for determining appropriate platform-specific dirs, e.g. a `user data dir`."
+optional = false
+python-versions = ">=3.10"
+groups = ["dev"]
+files = [
+    {file = "platformdirs-4.5.0-py3-none-any.whl", hash = "sha256:e578a81bb873cbb89a41fcc904c7ef523cc18284b7e3b3ccf06aca1403b7ebd3"},
+    {file = "platformdirs-4.5.0.tar.gz", hash = "sha256:70ddccdd7c99fc5942e9fc25636a8b34d04c24b335100223152c2803e4063312"},
+]
+
+[package.extras]
+docs = ["furo (>=2025.9.25)", "proselint (>=0.14)", "sphinx (>=8.2.3)", "sphinx-autodoc-typehints (>=3.2)"]
+test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=8.4.2)", "pytest-cov (>=7)", "pytest-mock (>=3.15.1)"]
+type = ["mypy (>=1.18.2)"]
+
+[[package]]
+name = "pre-commit"
+version = "4.5.0"
+description = "A framework for managing and maintaining multi-language pre-commit hooks."
+optional = false
+python-versions = ">=3.10"
+groups = ["dev"]
+files = [
+    {file = "pre_commit-4.5.0-py2.py3-none-any.whl", hash = "sha256:25e2ce09595174d9c97860a95609f9f852c0614ba602de3561e267547f2335e1"},
+    {file = "pre_commit-4.5.0.tar.gz", hash = "sha256:dc5a065e932b19fc1d4c653c6939068fe54325af8e741e74e88db4d28a4dd66b"},
+]
+
+[package.dependencies]
+cfgv = ">=2.0.0"
+identify = ">=1.0.0"
+nodeenv = ">=0.11.1"
+pyyaml = ">=5.1"
+virtualenv = ">=20.10.0"
+
+[[package]]
 name = "pydantic"
 version = "2.12.3"
 description = "Data validation using Python type hints"
@@ -872,6 +971,73 @@ files = [
 typing-extensions = ">=4.14.1"
 
 [[package]]
+name = "pyfastx"
+version = "2.2.0"
+description = "pyfastx is a python module for fast random access to sequences from plain and gzipped FASTA/Q file"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "pyfastx-2.2.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:9be040933fb65fabba1b7ccb9a022607acdb5936c54f07c662b49f7bd05ffff5"},
+    {file = "pyfastx-2.2.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:407f669b9135830b0535b12efbbf7f0b8d9f00c49746b31f85b5cacee19d73a1"},
+    {file = "pyfastx-2.2.0-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:990bdc9b47f48d1be837da9e85191efb598b63af9a50eac57769ca15ca4a5866"},
+    {file = "pyfastx-2.2.0-cp310-cp310-musllinux_1_2_i686.whl", hash = "sha256:4674567c1ec36844a0aff21febefa655302af262eedc4dd2a0dcd3da2562fc31"},
+    {file = "pyfastx-2.2.0-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:da866dd8d27981a7f0cb3099f64525adcb16b01d6e55487af936db6eaebfc894"},
+    {file = "pyfastx-2.2.0-cp310-cp310-win32.whl", hash = "sha256:4153dadd5218b80a59410f453f1ace02f243e48e7652eefd8d643769214d25c5"},
+    {file = "pyfastx-2.2.0-cp310-cp310-win_amd64.whl", hash = "sha256:58bc41c8da200d948551d190d277e5dcb6eff1ce21cf7060029019c7e4654d7d"},
+    {file = "pyfastx-2.2.0-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:63a986ee5483c2575bbdbbf6cf2220b83cb6cea8544403914e8498a1ea645a3d"},
+    {file = "pyfastx-2.2.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:136a6af0a23688d18429f71ffdb0f391743639deeae5573e948b5fddacc71a6d"},
+    {file = "pyfastx-2.2.0-cp311-cp311-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:dcf40d705c66eb03b7822acba7350d25bd9b3a3790f76ebee197350b698c13d9"},
+    {file = "pyfastx-2.2.0-cp311-cp311-musllinux_1_2_i686.whl", hash = "sha256:c0a123d257190c85b558abe1fb974d9c1c79f16c58aee8639d7b1a49490da051"},
+    {file = "pyfastx-2.2.0-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:634946071f69adffde14e9d8da9feb24702b7bef4d954cd36b585a41a853dce2"},
+    {file = "pyfastx-2.2.0-cp311-cp311-win32.whl", hash = "sha256:c102bcc3fe7ef1b751f0dd2e0015f3cb1454e1c2b415ec934c557172236ba450"},
+    {file = "pyfastx-2.2.0-cp311-cp311-win_amd64.whl", hash = "sha256:ddde6289ed4addb1dc88046ce173ffb2506db366e92fb34a291fc68ac3ba254c"},
+    {file = "pyfastx-2.2.0-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:bfd5429595000c1e1460e2330e918e2de8dd7def582522a1dc607b6d0c0008b0"},
+    {file = "pyfastx-2.2.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:72e347e959de5933e57fabe348b14ce5f1ccdef6d6064a7339a537e7c9994f43"},
+    {file = "pyfastx-2.2.0-cp312-cp312-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:e7063722882dff39058d123a1acaf8e889115c66faad04131d69ed8048993e50"},
+    {file = "pyfastx-2.2.0-cp312-cp312-musllinux_1_2_i686.whl", hash = "sha256:dc81b19c7707d7478018f01e0fbad863180bcc2aa7a0a8b752d111096dc19aa8"},
+    {file = "pyfastx-2.2.0-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:1ac393e22638497ee9e2d2a2c1a518c55a9c570caf03189ce55092ebd84da68f"},
+    {file = "pyfastx-2.2.0-cp312-cp312-win32.whl", hash = "sha256:0f61aed4145231ca7572a149ca56e4f57ca7435c6c0cdd766908c0f3bfd6784e"},
+    {file = "pyfastx-2.2.0-cp312-cp312-win_amd64.whl", hash = "sha256:5956b4a51cff100fea56058bc90317d7e470dcc2a704e16882fac70a20133503"},
+    {file = "pyfastx-2.2.0-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:f8c7f07c70db9fee1769baafd75e89e2a9d9eb6055269fc2dc349a6e5c7f6b3c"},
+    {file = "pyfastx-2.2.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:bff0eb6452ceca2d5402259014a1cb1f9cf4359f3f1cb5059a3ccaf4874f0d81"},
+    {file = "pyfastx-2.2.0-cp313-cp313-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:110fe413ba9eaece38857db77e75fa18f7ff5426013cac260819715ab3738f1a"},
+    {file = "pyfastx-2.2.0-cp313-cp313-musllinux_1_2_i686.whl", hash = "sha256:1183e7c2be568186bcb7b7ccd76d3b80d37d14191c80236dca2de23e18e42d10"},
+    {file = "pyfastx-2.2.0-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:16a211abc16184e20edcc7f4329590d4a68ec43a4782fa70e5883adae41703cf"},
+    {file = "pyfastx-2.2.0-cp313-cp313-win32.whl", hash = "sha256:346c6f54019ae065ab6194d75c821bdbbdc27e667f41f3675bc1364785737313"},
+    {file = "pyfastx-2.2.0-cp313-cp313-win_amd64.whl", hash = "sha256:3d6b882594b233724dfa9ecca4d2fd55456bf6b08c9b79aa4dc06ff15c1ffdea"},
+    {file = "pyfastx-2.2.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:105f222c159bfd744a9ab54044c3a647c164dd413ed9dac69ec1d220a8d2c0e3"},
+    {file = "pyfastx-2.2.0-cp36-cp36m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1ad8439992277369b1e73897f0db4db889c55b03b8b9ea901aa67f9913688167"},
+    {file = "pyfastx-2.2.0-cp36-cp36m-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:c930296d2261ce7d7cfc1cd7db895f7e7ee83292c298069dbc7fb862c6257a18"},
+    {file = "pyfastx-2.2.0-cp36-cp36m-musllinux_1_2_i686.whl", hash = "sha256:46a934caa1fa17342223b3aab59a562c5aac63bb403af344062557c0edd1c26b"},
+    {file = "pyfastx-2.2.0-cp36-cp36m-musllinux_1_2_x86_64.whl", hash = "sha256:54b8de68e667460b59e4e52970ba6e015f0fa08f413b90407a29b1ff1761b882"},
+    {file = "pyfastx-2.2.0-cp36-cp36m-win32.whl", hash = "sha256:80126e5f7d08e297fd577f8ccdd52428756b2f41748dacd6a520f37fc52f03cf"},
+    {file = "pyfastx-2.2.0-cp36-cp36m-win_amd64.whl", hash = "sha256:33599de576eba4a709b78d98eb6fec57b57b4fdb78c9cf18c659670f9779023c"},
+    {file = "pyfastx-2.2.0-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:d42690ffe1027faccbadd875c072b0981e718b6dd77ae596763f717859f9fb84"},
+    {file = "pyfastx-2.2.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:332160bb7d4e5e8e15a192a4bc18348b829cf73d478bb6f5cb5391cdf3527c6c"},
+    {file = "pyfastx-2.2.0-cp37-cp37m-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:3e3188ca7d0509a9c2967dda41ea7d9240d84420d12cf74553b614d1d59faf62"},
+    {file = "pyfastx-2.2.0-cp37-cp37m-musllinux_1_2_i686.whl", hash = "sha256:4e76d800c022537aecd60b35ea21971b5827888eddc3926689f054224bc2d559"},
+    {file = "pyfastx-2.2.0-cp37-cp37m-musllinux_1_2_x86_64.whl", hash = "sha256:7e06d13bbeafe1185e66aaa187523aa1ff886aa942793c569724604983bf8a02"},
+    {file = "pyfastx-2.2.0-cp37-cp37m-win32.whl", hash = "sha256:c679924c6767de266cea87337c392fa1ae87998f30f5a5c021f626c918065c66"},
+    {file = "pyfastx-2.2.0-cp37-cp37m-win_amd64.whl", hash = "sha256:799ed40ef08a8818d7ad34cf255c5b1c458057429373dba597d99e54acddb641"},
+    {file = "pyfastx-2.2.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:a232438fd66a9fc4675faff5f5f332e4cfc97dc610bae59ca2abb003741c2704"},
+    {file = "pyfastx-2.2.0-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ea3290502077bd20b413194e9851a474e14476d5b19017c0754d5371ec80b2a4"},
+    {file = "pyfastx-2.2.0-cp38-cp38-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:eb83199707d77a3b56ac3ef67509418f48456c30119de50fc2c8588d596e09f0"},
+    {file = "pyfastx-2.2.0-cp38-cp38-musllinux_1_2_i686.whl", hash = "sha256:b6749b095494c0b798ca37ea602a4f00aab9f07e17ba2fe89e0b82654ee94d6c"},
+    {file = "pyfastx-2.2.0-cp38-cp38-musllinux_1_2_x86_64.whl", hash = "sha256:9f39393c4705678a86368499eac8232e75853859e3ff5d8fbad6cb8194bc9e53"},
+    {file = "pyfastx-2.2.0-cp38-cp38-win32.whl", hash = "sha256:07b7a0a533e2d1950d6908f42ae6d8e45b41bffdd5cc82fe9a89daa1d6f5bea1"},
+    {file = "pyfastx-2.2.0-cp38-cp38-win_amd64.whl", hash = "sha256:dc8d43cfb7cd06411112ca37c75e76d0242d7d5509f16f8c9d17a3d494ee59e0"},
+    {file = "pyfastx-2.2.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:5684a765c39dddc3cf3508605f73d27f1de3691bbd0c1aab47b89ede99cded55"},
+    {file = "pyfastx-2.2.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a15ea288cbd69f0553f3ea1df48d9098fda32b19b96887e68d85eb97eddce889"},
+    {file = "pyfastx-2.2.0-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:bb3c4a18ec686c05efd517b805891255f4565b24ed2db77f3b3a72b6bf75f568"},
+    {file = "pyfastx-2.2.0-cp39-cp39-musllinux_1_2_i686.whl", hash = "sha256:b0756b850a4b7754fd75facbcf8887d3974555e144f27adad93d056e1f29a35a"},
+    {file = "pyfastx-2.2.0-cp39-cp39-musllinux_1_2_x86_64.whl", hash = "sha256:2442d4a41f35afc4b9a836cad265dd003b5a10e08acd5c23802e6afc5749a3a5"},
+    {file = "pyfastx-2.2.0-cp39-cp39-win32.whl", hash = "sha256:978b7c4f0e5ea4d5d480081caa3bd076b0be64b8e64c4f8d7029d51af568faa9"},
+    {file = "pyfastx-2.2.0-cp39-cp39-win_amd64.whl", hash = "sha256:d5b50138a66cf4a1ba7215e3779ff986c3d1edc6617028a9c55c411aae579fda"},
+    {file = "pyfastx-2.2.0.tar.gz", hash = "sha256:80f1585a0c0fd021d1e0091ec4275a2bed6587633bf69165748ff1a541fdcc27"},
+]
+
+[[package]]
 name = "pysam"
 version = "0.23.3"
 description = "Package for reading, manipulating, and writing genomic data"
@@ -951,7 +1117,7 @@ version = "6.0.3"
 description = "YAML parser and emitter for Python"
 optional = false
 python-versions = ">=3.8"
-groups = ["main"]
+groups = ["main", "dev"]
 files = [
     {file = "PyYAML-6.0.3-cp38-cp38-macosx_10_13_x86_64.whl", hash = "sha256:c2514fceb77bc5e7a2f7adfaa1feb2fb311607c9cb518dbc378688ec73d8292f"},
     {file = "PyYAML-6.0.3-cp38-cp38-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:9c57bb8c96f6d1808c030b1687b9b5fb476abaa47f0db9c0101f5e9f394e97f4"},
@@ -1245,6 +1411,27 @@ files = [
 ]
 
 [[package]]
+name = "virtualenv"
+version = "20.35.4"
+description = "Virtual Python Environment builder"
+optional = false
+python-versions = ">=3.8"
+groups = ["dev"]
+files = [
+    {file = "virtualenv-20.35.4-py3-none-any.whl", hash = "sha256:c21c9cede36c9753eeade68ba7d523529f228a403463376cf821eaae2b650f1b"},
+    {file = "virtualenv-20.35.4.tar.gz", hash = "sha256:643d3914d73d3eeb0c552cbb12d7e82adf0e504dbf86a3182f8771a153a1971c"},
+]
+
+[package.dependencies]
+distlib = ">=0.3.7,<1"
+filelock = ">=3.12.2,<4"
+platformdirs = ">=3.9.1,<5"
+
+[package.extras]
+docs = ["furo (>=2023.7.26)", "proselint (>=0.13)", "sphinx (>=7.1.2,!=7.3)", "sphinx-argparse (>=0.4)", "sphinxcontrib-towncrier (>=0.2.1a0)", "towncrier (>=23.6)"]
+test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess (>=1)", "flaky (>=3.7)", "packaging (>=23.1)", "pytest (>=7.4)", "pytest-env (>=0.8.2)", "pytest-freezer (>=0.4.8) ; platform_python_implementation == \"PyPy\" or platform_python_implementation == \"GraalVM\" or platform_python_implementation == \"CPython\" and sys_platform == \"win32\" and python_version >= \"3.13\"", "pytest-mock (>=3.11.1)", "pytest-randomly (>=3.12)", "pytest-timeout (>=2.1)", "setuptools (>=68)", "time-machine (>=2.10) ; platform_python_implementation == \"CPython\""]
+
+[[package]]
 name = "xyzservices"
 version = "2025.10.0"
 description = "Source of XYZ tiles providers"
@@ -1259,4 +1446,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12"
-content-hash = "e246188c603654244a3d819b1d9026f3822b952f1594c5cf83581dd408d3a9fe"
+content-hash = "a82bc79db88c49656502b2675ed93f970b8429bfcdd6ee48b97e2d4ec10fbdb9"

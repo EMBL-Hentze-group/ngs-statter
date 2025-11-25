@@ -1,6 +1,6 @@
 [project]
 name = "statter"
-version = "0.5.20"
+version = "0.5.21"
 description = ""
 authors = [
     {name = "sahadeva",email = "sudeep.sahadevan@embl.de"}
@@ -16,6 +16,7 @@ dependencies = [
     "pydantic (>=2.12.3,<3.0.0)",
     "pysam (>=0.23.3,<0.24.0)",
     "networkx (>=3.5,<4.0)",
+    "pyfastx (>=2.2.0,<3.0.0)",
 ]
 
 [tool.poetry]
@@ -41,6 +42,7 @@ sample_stats = "statter.scripts.all_stats:sample_stats"
 gather_sample_stats = "statter.scripts.all_stats:gather_sample_stats"
 all_stats = "statter.scripts.collect_stats:all_stats"
 compile_stats = "statter.scripts.collect_stats:compile_stats"
+fix_header = "statter.scripts.header_fixer:fix_flexbar_umi_headers"
 
 [tool.poetry.build]
 script = "build-extension.py"
@@ -53,6 +55,10 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.group.build.dependencies]
 maturin = "^1.9.6"
 patchelf = "^0.17.2.4"
+
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^4.5.0"
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
