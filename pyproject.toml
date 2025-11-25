@@ -1,6 +1,6 @@
 [project]
 name = "statter"
-version = "0.5.15"
+version = "0.5.20"
 description = ""
 authors = [
     {name = "sahadeva",email = "sudeep.sahadevan@embl.de"}
@@ -57,3 +57,8 @@ patchelf = "^0.17.2.4"
 [tool.maturin]
 features = ["pyo3/extension-module"]
 module-name = "statter"
+
+[[tool.poetry_bumpversion.replacements]]
+files = ["Cargo.toml", "README.md"]
+search = 'version = "{current_version}"'
+replace = 'version = "{new_version}"'
