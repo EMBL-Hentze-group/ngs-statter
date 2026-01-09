@@ -27,7 +27,7 @@ class Kraken2:
         self.pattern = pattern
         self._kraken_files: List[Path] = []
         if len(report_files) > 0:  # type: ignore
-            self._kraken_files = [Path(f) for f in report_files]  # type: ignore
+            self._kraken_files = sorted([Path(f) for f in report_files])  # type: ignore
         elif report_folder is not None:
             self._kraken_files = sorted(Path(report_folder).glob(pattern))
         else:
