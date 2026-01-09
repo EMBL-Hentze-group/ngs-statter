@@ -1,7 +1,7 @@
 
 ## Mad statter
 
-version = "0.6.0"
+version = "0.6.1"
 
 A package to compute read/alignment statistics per fastq/bam file and parsers for niche formats. This will be eventually part of the *seq data analysis workflow. 
 
