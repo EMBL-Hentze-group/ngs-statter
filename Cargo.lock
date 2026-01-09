@@ -266,7 +266,7 @@ dependencies = [
 
 [[package]]
 name = "mad_statter"
-version = "0.5.21"
+version = "0.6.0"
 dependencies = [
  "flate2",
  "pyo3",
