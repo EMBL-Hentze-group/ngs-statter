@@ -76,9 +76,9 @@ def kraken_report_aggregator(
     taxonomy = tax.build_dag()
     k2_agg = Kraken2(
         taxonomy=taxonomy,
+        output_file=output_csv,
         report_folder=kraken_dir,
         report_files=reports,
-        output_file=output_csv,
         pattern=pattern,
     )
     k2_agg.aggregate_reports()

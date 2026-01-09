@@ -20,13 +20,14 @@ class Kraken2:
         output_file: str,
         report_folder: Optional[str] = None,
         report_files: Optional[List[str]] = None,
-        pattern: str = "_report.txt",
+        pattern: str = "*report.txt",
     ) -> None:
         self.taxonomy = taxonomy
         self.output_file = output_file
         self.pattern = pattern
-        if report_files is not None:
-            self._kraken_files = [Path(f) for f in report_files]
+        self._kraken_files: List[Path] = []
+        if len(report_files) > 0:  # type: ignore
+            self._kraken_files = [Path(f) for f in report_files]  # type: ignore
         elif report_folder is not None:
             self._kraken_files = sorted(Path(report_folder).glob(pattern))
         else:
