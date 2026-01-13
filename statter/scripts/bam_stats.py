@@ -3,7 +3,6 @@ from typing import List
 import click
 
 from statter.parsers.bam_parser import BamParser
-from statter.parsers.gff_parser import GFF3
 from statter.plotters.gene_type_read_length_distribution import GeneTypePlot
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
