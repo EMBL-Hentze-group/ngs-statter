@@ -1,15 +1,16 @@
 import json
 import logging
+import random
 import re
 from pathlib import Path
+from typing import Optional
 
 import numpy as np
 from bokeh.layouts import column, row
 from bokeh.models import ColorPicker, Legend
 from bokeh.models.formatters import NumeralTickFormatter
-from bokeh.plotting import figure, save
 from bokeh.palettes import Turbo256
-import random
+from bokeh.plotting import figure, save
 
 """
 plot read length distribution after adapter trimming
@@ -20,8 +21,9 @@ plot read length distribution after adapter trimming
 class ReadLengthPlot:
     def __init__(
         self,
-        json_folder: str,
         output_file: str,
+        json_files: Optional[list[str]] = None,
+        json_folder: Optional[str] = None,
         min_read_length: int = 15,
         pattern: str = "*.json",
         title: str = "Read length distribution after adapter trimming",
@@ -31,19 +33,27 @@ class ReadLengthPlot:
         self.pattern = pattern
         self.min_read_length = min_read_length
         self.output_file = output_file
-        self.read_lens = {}
-        self._get_read_lengths()
+
         self.title = title
         self.nsamples = nsamples
+        self.read_lens = {}
+        self._jsons: list[Path] = []
+        if len(json_files) > 0:  # type: ignore
+            self._jsons = sorted([Path(jf) for jf in json_files])  # type: ignore
+        elif json_folder is not None:
+            self._jsons = sorted(Path(json_folder).glob(pattern))
+        else:
+            raise RuntimeError("Either json_folder or json_files must be provided")
+        self._get_read_lengths()
 
     def _get_read_lengths(self) -> None:
         """
         Helper function
         Read json formatted read lengths
         """
-        for jp in sorted(Path(self.json_folder).glob(self.pattern)):
+        for jp in self._jsons:
             with open(jp, "r") as jh:
-                self.read_lens[re.sub("\..*$", "", jp.stem)] = json.load(jh)
+                self.read_lens[re.sub(r"\..*$", "", jp.stem)] = json.load(jh)
         if len(self.read_lens) == 0:
             raise ValueError(
                 f"Cannot find json formatted read length files in folder {self.json_folder}!"
