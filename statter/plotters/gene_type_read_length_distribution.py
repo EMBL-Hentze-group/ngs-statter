@@ -1,16 +1,17 @@
 import json
 import logging
 import re
-from pathlib import Path
 from collections import defaultdict
 from itertools import chain
-from bokeh.layouts import column, row
-from bokeh.models import ColorPicker, Legend, ColumnDataSource, CustomJS, Select
-from bokeh.models.formatters import NumeralTickFormatter
-from bokeh.plotting import figure, save
-from bokeh.palettes import Turbo256
+from pathlib import Path
 from random import sample
-from typing import Dict, List
+from typing import Dict, List, Optional
+
+from bokeh.layouts import column, row
+from bokeh.models import ColorPicker, ColumnDataSource, CustomJS, Legend, Select
+from bokeh.models.formatters import NumeralTickFormatter
+from bokeh.palettes import Turbo256
+from bokeh.plotting import figure, save
 
 """
 Plot aligned read length distribution per gene type
@@ -19,7 +20,12 @@ Plot aligned read length distribution per gene type
 
 class GeneTypePlot:
     def __init__(
-        self, json_folder: str, output_file: str, pattern: str = "*.json", nsamples=1
+        self,
+        output_file: str,
+        json_files: Optional[List[str]] = None,
+        json_folder: Optional[str] = None,
+        pattern: str = "*.json",
+        nsamples=1,
     ) -> None:
         self.json_folder = json_folder
         self.pattern = pattern
@@ -29,6 +35,13 @@ class GeneTypePlot:
         self._libsizes = {}  # library size for each sample
         self.source_data = {}
         self.samples = list()
+        self._jsons: list[Path] = []
+        if len(json_files) > 0:  # type: ignore
+            self._jsons = sorted([Path(jf) for jf in json_files])  # type: ignore
+        elif json_folder is not None:
+            self._jsons = sorted(Path(json_folder).glob(pattern))
+        else:
+            raise RuntimeError("Either json_folder or json_files must be provided")
         self._get_data()
 
     def _get_data(self) -> None:
@@ -37,7 +50,7 @@ class GeneTypePlot:
         parse and format data
         """
         _tmp_data_dict = {}
-        for jf in sorted(Path(self.json_folder).glob(self.pattern)):
+        for jf in sorted(self._jsons):
             jf_name = re.sub(r"\..*$", "", jf.stem)
             self.samples.append(jf_name)
             _tmp_data_dict[jf_name] = self._load_format_convert(jf)
