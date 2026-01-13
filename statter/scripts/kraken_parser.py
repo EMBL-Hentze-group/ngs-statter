@@ -61,15 +61,17 @@ def kraken_report_aggregator(
     output_csv: str,
 ):
     """
+    Collect kraken2 reports into a single file
+    \b
     Aggregate Kraken2 species classification report. Given NCBI taxonomy database nodes.dmp file names.dmp file, either a directory with Kraken2 classification results
     or a list of Kraken2 report files, aggregate all classification results into one file. Either --kraken_dir option or kraken reports as space separated arguments must be provided.
     """
     if kraken_dir is None and len(reports) == 0:
-        raise RuntimeError(
+        raise click.UsageError(
             "Either --kraken_dir or kraken reports as space separated arguments must be provided"
         )
     if kraken_dir is not None and len(reports) > 0:
-        raise RuntimeError(
+        raise click.UsageError(
             "Only one of --kraken_dir or kraken reports as space separated arguments should be provided"
         )
     tax = Taxonomy(nodes=nodes, names=names)
