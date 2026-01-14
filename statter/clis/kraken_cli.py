@@ -14,7 +14,7 @@ def kraken() -> None:
     """
 
 
-@kraken.command("collect_reports", context_settings=CONTEXT_SETTINGS)
+@kraken.command("collect-reports", context_settings=CONTEXT_SETTINGS)
 @click.argument(
     "reports",
     required=False,
@@ -40,7 +40,7 @@ def kraken() -> None:
     "--kraken_dir",
     "kraken_dir",
     required=False,
-    help="Directory containing Kraken2 classification reports (see kraken2 -h). Either --kraken_dir or --reports MUST be provided",
+    help="Directory containing Kraken2 classification reports (see https://github.com/DerrickWood/kraken2). Either --kraken_dir or reports as space separated arguments MUST be provided",
     type=click.Path(exists=True, file_okay=False, dir_okay=True),
 )
 @click.option(

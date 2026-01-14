@@ -13,7 +13,7 @@ def flexbar() -> None:
     """
 
 
-@flexbar.command("fix_header", context_settings=CONTEXT_SETTINGS)
+@flexbar.command("fix-header", context_settings=CONTEXT_SETTINGS)
 @click.option(
     "--in_fq",
     "-i",
@@ -41,9 +41,26 @@ def flexbar() -> None:
 )
 def fix_flexbar_umi_headers(in_fq: str, out_fq: str, separator: str) -> None:
     """
-    Fix flexbar UMI headers.
+    Fix flexbar UMI headers.\b
+
+    Move UMIs from comment section to read identifier in FASTQ headers produced by Flexbar\b
+
+    **Before moving UMI**
+
     \b
-    Move UMIs from comment section to read identifier in FASTQ headers produced by Flexbar
+    @VH01545:237:AAHGKVNM5:1:1101:20466:1189 1:N:0:1_GGTTTA
+    TTCTAACTAAGGTAAGAGCGGTTCAGCATCCACGCCGCTCTTGCTCTCTGATTTTAGTTGGTATTCTAAGTAA
+    +
+    IIIIII-IIIIIIIIIII9IIIIIII-II--I-I9II-II------I-999999999II-I9-99-999--99
+
+    **After moving UMI**
+
+    \b
+    @VH01545:237:AAHGKVNM5:1:1101:20466:1189_GGTTTA 1:N:0:1
+    TTCTAACTAAGGTAAGAGCGGTTCAGCATCCACGCCGCTCTTGCTCTCTGATTTTAGTTGGTATTCTAAGTAA
+    +
+    IIIIII-IIIIIIIIIII9IIIIIII-II--I-I9II-II------I-999999999II-I9-99-999--99
+
     """
     fixer = HeaderFixer(in_fq=in_fq, out_fq=out_fq, separator=separator)
     fixer.fix_umi_header()

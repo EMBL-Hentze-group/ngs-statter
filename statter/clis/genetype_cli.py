@@ -16,7 +16,7 @@ def genetype() -> None:
     """
 
 
-@genetype.command("parse_gene_type_read_length", context_settings=CONTEXT_SETTINGS)
+@genetype.command("parse-gene-type-read-length", context_settings=CONTEXT_SETTINGS)
 @click.option(
     "--gff3",
     "gff3",
@@ -96,10 +96,10 @@ def gene_type_read_length_stats(
     ignore_duplicate: bool = False,
 ) -> None:
     """
-    Compute gene type read length distributions
-    \b
-    Given a gff3 file, a list of features to parse, and a bam file
-    calculate the length distribution of reads aligning to these features
+    Compute gene type read length distributions\b
+
+    Given a gff3 file, a list of gene types to parse, and a bam file
+    calculate the length distribution of reads aligning to these gene types
     and write this info in json format
     """
     bam_parser = BamParser(bam=bam, min_q=min_q, ignore_duplicate=ignore_duplicate)
@@ -113,7 +113,7 @@ def gene_type_read_length_stats(
     )
 
 
-@genetype.command("plot_gene_type_read_length", context_settings=CONTEXT_SETTINGS)
+@genetype.command("plot-gene-type-read-length", context_settings=CONTEXT_SETTINGS)
 @click.argument(
     "json",
     nargs=-1,
@@ -125,7 +125,7 @@ def gene_type_read_length_stats(
     "--json_dir",
     "json_dir",
     required=False,
-    help="Directory containing json formatted read_length files (see gene_type_read_length_parser -h)",
+    help="Directory containing json formatted read length files (see statter parse-gene-type-read-length  -h)",
 )
 @click.option(
     "--pattern",
@@ -148,8 +148,8 @@ def gene_type_length_plotter(
     json_dir: str, json: list[str], output_html: str, pattern: str, nsamples=1
 ) -> None:
     """
-    Plot gene type read length distributions
-    \b
+    Plot gene type read length distributions\b
+
     Read in json formatted gene type read length stats and output html plot.
     Either a directory containing json files (using --json_dir option) or a list of json files as space separated arguments MUST be provided.
     """

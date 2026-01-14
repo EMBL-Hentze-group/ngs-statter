@@ -14,7 +14,7 @@ def sample() -> None:
     """Sample level statistics commands."""
 
 
-@sample.command("sample_stats", context_settings=CONTEXT_SETTINGS)
+@sample.command("sample-stats", context_settings=CONTEXT_SETTINGS)
 @click.option(
     "--sample_name",
     "-n",
@@ -28,7 +28,7 @@ def sample() -> None:
     "-r",
     "raw_reads",
     required=True,
-    help="Path to seqkit stats output for raw reads",
+    help="Path to seqkit stats output for raw reads (see https://github.com/shenwei356/seqkit)",
     type=click.Path(exists=True, file_okay=True, dir_okay=False),
 )
 @click.option(
@@ -74,7 +74,7 @@ def sample() -> None:
     "-a",
     "align",
     required=True,
-    help="Path to bam statistics json file",
+    help="Path to bam statistics json file (see statter STAR -h)",
     type=click.Path(exists=True, file_okay=True, dir_okay=False),
 )
 @click.option(
@@ -91,7 +91,7 @@ def sample() -> None:
     "--kraken2_report",
     "-k",
     "kraken2",
-    help="Path to kraken2 report file [Optional]",
+    help="Path to kraken2 report file (see https://github.com/DerrickWood/kraken2) [Optional]",
     required=False,
     default=None,
     show_default=True,
@@ -118,11 +118,9 @@ def all_stats(
     output,
 ):
     """
-    Collect stats from various steps for a single
+    Collect stats from various steps for a single\b
 
-    \b
-
-    Collect statistics from various steps and compile into a single json file
+    Collect statistics from various steps in the workflow and compile into a single json file
     """
     stats_collector = SampleStats(
         sample=sample_name,
@@ -139,7 +137,7 @@ def all_stats(
     stats_collector.to_json()
 
 
-@sample.command("compile_stats", context_settings=CONTEXT_SETTINGS)
+@sample.command("compile-stats", context_settings=CONTEXT_SETTINGS)
 @click.option(
     "--output",
     "-o",
@@ -159,6 +157,6 @@ def compile_stats(output, files):
     """
     Collect stats from multiple samples into a single tsv file\b
 
-    Collect statistics from multiple samples and compile into a single tsv file. Stats for individual samples should be in json format (see `sample_stats -h` for details) and provided as space separated arguments.
+    Collect statistics from multiple samples and compile into a single tsv file. Stats for individual samples should be in json format (see `statter sample-stats -h` for details) and provided as space separated arguments.
     """
     compile_all_sample_stats(output, list(files))

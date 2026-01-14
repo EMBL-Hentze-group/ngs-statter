@@ -41,12 +41,6 @@ def basic_alignment_stats(bam: str, min_q: int, out_json: str) -> None:
     Compute basic alignment statistics for a generic BAM file.
 
     \b
-    Raises:
-        RuntimeError: If alignment statistics cannot be parsed from the BAM file.
-        RuntimeError: If any required values are missing from the alignment statistics.
-        RuntimeError: If the specified values cannot be found in the BAM file.
-
-    \b
     The basic alignment statistics include the following metrics:
     - Input reads: The total number of reads in the BAM file.
     - Mapped: The number of reads that are mapped to the reference genome.

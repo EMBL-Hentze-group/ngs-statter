@@ -1,7 +1,4 @@
-import re
-
 import click
-from numpy import require
 
 from statter.parsers.fastq_stats import FqLength
 from statter.plotters.read_length_distribution import ReadLengthPlot
@@ -17,16 +14,14 @@ def fastq() -> None:
     """
 
 
-@fastq.command("parse_read_length", context_settings=CONTEXT_SETTINGS)
+@fastq.command("parse-read-length", context_settings=CONTEXT_SETTINGS)
 @click.option("--fq", "fastq", required=True, help="Fastq file (supports .gz files)")
 @click.option(
     "--json", "json", required=True, help="File name for json formatted output file"
 )
 def parse_read_length(fastq: str, json: str) -> None:
     """
-    Compute fastq read length distribution
-
-    \b
+    Compute fastq read length distribution\b
 
     For a given fastq file, compute read lengths and write the distribution to json format
     """
@@ -34,7 +29,7 @@ def parse_read_length(fastq: str, json: str) -> None:
     flp.read_length()
 
 
-@fastq.command("plot_read_length", context_settings=CONTEXT_SETTINGS)
+@fastq.command("plot-read-length", context_settings=CONTEXT_SETTINGS)
 @click.argument(
     "json",
     nargs=-1,
@@ -46,7 +41,7 @@ def parse_read_length(fastq: str, json: str) -> None:
     "--json_dir",
     "json_dir",
     required=False,
-    help="Directory containing json formatted read_length files (see read_length_parser -h). Either --json_dir or json formatted files as space separated arguments MUST be provided",
+    help="Directory containing json formatted read_length files (see statter parse-read-length -h). Either --json_dir or json formatted files as space separated arguments MUST be provided",
 )
 @click.option(
     "--min_read_length",
@@ -91,7 +86,10 @@ def plot_read_length(
     nsamples: int = 1,
 ) -> None:
     """
-    Read in  json formatted files and output html plot
+    Read in  json formatted files and output html plot\b
+
+    Either a directory containing json files (using --json_dir option) or a list of json files as space separated arguments MUST be provided.
+
     """
     if json_dir is None and len(json) == 0:
         raise click.UsageError(
