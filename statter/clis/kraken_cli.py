@@ -67,9 +67,7 @@ def kraken_report_aggregator(
     output_csv: str,
 ):
     """
-    Collect kraken2 reports into a single file
-
-    \b
+    Collect kraken2 reports into a single file\b
 
     Aggregate Kraken2 species classification report. Given NCBI taxonomy database nodes.dmp file names.dmp file, either a directory with Kraken2 classification results
     or a list of Kraken2 report files, aggregate all classification results into one file. Either --kraken_dir option or kraken reports as space separated arguments must be provided.
