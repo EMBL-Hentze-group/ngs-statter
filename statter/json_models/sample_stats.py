@@ -16,6 +16,21 @@ class BaseStats(BaseModel):
     rRNA_free: Optional[int] = Field(default=None, alias="rRNA free")
 
 
+class BamStats(BaseModel):
+    """BamStats
+    Pydantic model for basic BAM alignment statistics
+    """
+
+    input_reads: int = Field(default=0, alias="Input reads")
+    mapped: int = Field(default=0, alias="Mapped reads")
+    unmapped: int = Field(default=0, alias="Unmapped reads")
+
+    model_config = ConfigDict(
+        extra="allow",
+        populate_by_name=True,
+    )
+
+
 class StarStats(BaseModel):
     """StarStats
     Pydantic model for STAR alignment statistics
