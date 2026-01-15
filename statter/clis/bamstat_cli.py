@@ -44,9 +44,7 @@ def basic_alignment_stats(bam: str, min_q: int, out_json: str) -> None:
     The basic alignment statistics include the following metrics:
     - Input reads: The total number of reads in the BAM file.
     - Mapped: The number of reads that are mapped to the reference genome.
-    - Mapped %: The percentage of reads that are mapped to the reference genome.
     - Unmapped: The number of reads that are not mapped to the reference genome.
-    - Unmapped %: The percentage of reads that are not mapped to the reference genome.
 
     The alignment statistics are written to the specified output JSON file.
     """
@@ -79,8 +77,8 @@ def basic_alignment_stats(bam: str, min_q: int, out_json: str) -> None:
 )
 def alignment_stats_STAR(bam: str, min_q: int, out_json: str) -> None:
     """
-    Compute alignment statistics for a STAR aligned BAM file
-    \b
+    Compute alignment statistics for a STAR aligned BAM file\b
+
     Compute alignment statistics for a STAR aligned BAM file and output as JSON.
     """
     bam_parser = BamParser(bam=bam, min_q=min_q, ignore_duplicate=False)
