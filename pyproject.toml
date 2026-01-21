@@ -1,6 +1,6 @@
 [project]
 name = "statter"
-version = "0.8.0"
+version = "0.9.0"
 description = ""
 authors = [
     {name = "sahadeva",email = "sudeep.sahadevan@embl.de"}
@@ -17,6 +17,9 @@ dependencies = [
     "pysam (>=0.23.3,<0.24.0)",
     "networkx (>=3.5,<4.0)",
     "pyfastx (>=2.2.0,<3.0.0)",
+    "rtree (>=1.4.1,<2.0.0)",
+    "matplotlib (>=3.10.8,<4.0.0)",
+    "seaborn (>=0.13.2,<0.14.0)",
 ]
 
 [tool.poetry]
