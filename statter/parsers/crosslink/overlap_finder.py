@@ -189,8 +189,8 @@ class FindOverlaps:
         #     sfig.savefig(file,bbox_inches='tight')
         # else:
         sfig.savefig(file, bbox_inches="tight", dpi=300)
-        out_csv = str(Path(file).with_suffix(".csv"))
-        self._save_csv(out_csv)
+        # out_csv = str(Path(file).with_suffix(".csv"))
+        # self._save_csv(out_csv)
 
     def plot(
         self,
