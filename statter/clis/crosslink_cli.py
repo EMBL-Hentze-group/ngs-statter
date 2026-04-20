@@ -1,5 +1,4 @@
 import click
-from pyparsing import show_best_practices
 
 from statter.parsers.crosslink.yaml_parser import YamlCheck
 from statter.plotters.crosslink_plotter import Plotter
@@ -95,6 +94,14 @@ def yaml_example() -> None:
     show_default=True,
 )
 @click.option(
+    "--ymax",
+    "ymax",
+    default=None,
+    help="Maximum value for crosslink counts on y axis(if not set, determined automatically)",
+    type=click.IntRange(min=1),
+    show_default=True,
+)
+@click.option(
     "--fig-width",
     "width",
     default=30,
@@ -136,6 +143,7 @@ def plot_crosslinks(
     smoothing_window,
     xlabel,
     ylabel,
+    ymax,
     width,
     height,
     errorbar,
@@ -155,4 +163,5 @@ def plot_crosslinks(
             width=width,
             height=height,
             errorbar=errorbar,
+            ymax=ymax,
         )

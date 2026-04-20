@@ -137,6 +137,7 @@ class FindOverlaps:
         width=30,
         height=27,
         errorbar="sd",
+        ymax=None,
     ):
         """
         plot data using seaborn
@@ -150,7 +151,7 @@ class FindOverlaps:
         logger.debug("Default figure size: {}".format(plt.rcParams["figure.figsize"]))
         cm = 1 / 2.54  # centimeters in inches
         plt.rcParams["figure.figsize"] = (width * cm, height * cm)
-        sns.set(rc={"figure.figsize": (width * cm, height * cm)})
+        sns.set_theme(rc={"figure.figsize": (width * cm, height * cm)})
         logger.debug("New figure size: {}".format(plt.rcParams["figure.figsize"]))
         sns.set_style("ticks")
         fig, ax = plt.subplots()
@@ -172,6 +173,9 @@ class FindOverlaps:
         tick_pos = sorted(tick_pos)
         # remove trailing zeors in labels
         tick_labels = list(map(lambda tp: int(tp - self.l), tick_pos))
+        # set ymax if provided by user
+        if ymax is not None:
+            sg.set_ylim(0, ymax)
         sg.set_xticks(tick_pos)
         sg.set_xticklabels(tick_labels)
         sg.set_xlabel(xlabel)
@@ -201,6 +205,7 @@ class FindOverlaps:
         width=30,
         height=27,
         errorbar="sd",
+        ymax=None,
     ):
         """
         wrapper to call get_counts and plot results
@@ -213,6 +218,7 @@ class FindOverlaps:
             width=width,
             height=height,
             errorbar=errorbar,
+            ymax=ymax,
         )
 
     def _save_csv(self, csv_out):

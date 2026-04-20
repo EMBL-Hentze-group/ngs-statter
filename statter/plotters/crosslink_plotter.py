@@ -64,10 +64,17 @@ class Plotter:
         width=30,
         height=27,
         errorbar="sd",
+        ymax=None,
     ):
         if errorbar == "None":
             errorbar = None
         fo = FindOverlaps(
-            self._index, self._orig_leng, self._extended_leng, self._file_map, self.l
+            self._index,
+            self._orig_leng,
+            self._extended_leng,
+            self._file_map,
+            self.l,
         )
-        fo.plot(out_file, smoothing_window, xlabel, ylabel, width, height, errorbar)
+        fo.plot(
+            out_file, smoothing_window, xlabel, ylabel, width, height, errorbar, ymax
+        )
