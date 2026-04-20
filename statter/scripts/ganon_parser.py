@@ -1,7 +1,10 @@
+import warnings
+from logging import warning
+
 import click
 
-from statter.parsers.ganon_unclassified_fastq_writer import GanonUnclassifiedFq
 from statter.parsers.ganon_abundance_parser import GanonTreParser
+from statter.parsers.ganon_unclassified_fastq_writer import GanonUnclassifiedFq
 from statter.plotters.ganon_contamination_vs_unclassified_read_length_distribution import (
     GanonReadLengthPlot,
 )
@@ -45,8 +48,15 @@ def unclassifed_read_parser(
     unc: str, src_fastq: str, target_fastq: str, rl_json
 ) -> None:
     """
-    Write ganon2 unclassified reads into a separate fastq file and compute read length distribution
+    Write ganon2 unclassified reads into a separate fastq file and compute read length distribution\b
+
+    **Warning**: This script is deprecated
     """
+    warnings.warn(
+        "This script is deprecated and will be removed in a future release.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     ganon_unc = GanonUnclassifiedFq(
         unc=unc, src_fq=src_fastq, target_fq=target_fastq, read_length_json=rl_json
     )
@@ -88,8 +98,15 @@ def ganon_read_length_plotter(
     json_dir: str, output_html: str, pattern: str = "*.json", nsamples: int = 1
 ) -> None:
     """
-    Plot read lengths after ganon classification using json formatted read length distribution files
+    Plot read lengths after ganon classification using json formatted read length distribution files\b
+
+    **Warning**: This script is deprecated
     """
+    warnings.warn(
+        "This script is deprecated and will be removed in a future release.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     grlp = GanonReadLengthPlot(
         json_folder=json_dir,
         output_file=output_html,
@@ -128,8 +145,15 @@ def ganon_abundance_aggregator(
     pattern: str = "*.tre",
 ) -> None:
     """
-    collect ganon report (*.tre) files and aggregate results across multiple samples
+    collect ganon report (*.tre) files and aggregate results across multiple samples\b
+
+    **Warning**: This script is deprecated
     """
+    warnings.warn(
+        "This script is deprecated and will be removed in a future release.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     gtp = GanonTreParser(
         result_folder=ganon_result_dir,
         output_file=output_csv,

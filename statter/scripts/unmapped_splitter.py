@@ -1,7 +1,9 @@
-import click
-
 # from pathlib import Path
 import json
+import warnings
+
+import click
+
 from statter.statter import single_end_unmapped_fastq
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
@@ -36,10 +38,18 @@ def unmapped_fastq_single_end(
     bam: str, fq_multi: str, fq_other: str, stats: str
 ) -> None:
     """
-    parse single end bam file for unmapped reads.
+    parse single end bam file for unmapped reads.\b
+
+    **Warning**: This script is deprecated. Use samtools 1.21 or higher (https://github.com/samtools/samtools/releases/tag/1.21) for the same outputs.\b
+
     Split unmapped fastqs into two files: (i) all multimappers (ii) other unmapped reads and
     generate unmapped statistics as json
     """
+    warnings.warn(
+        "Use samtools 1.21 or higher (https://github.com/samtools/samtools/releases/tag/1.21) for the same outputs. This script is deprecated and will be removed in a future release.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     unmapped_json = {}
     for k, v in single_end_unmapped_fastq(bam, fq_multi, fq_other).items():
         unmapped_json[k] = {"count": v.count, "seq_lens": v.seqlens}

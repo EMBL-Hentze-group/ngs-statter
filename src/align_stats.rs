@@ -38,11 +38,11 @@ pub fn alignment_stats(bam: &str, min_q: u8) -> HashMap<String, u32> {
         {
             continue;
         } else if asg.is_unmapped() {
-            *map_stat.entry(String::from("Unmapped")).or_insert(0) += 1;
+            *map_stat.entry(String::from("unmapped")).or_insert(0) += 1;
         } else {
-            *map_stat.entry(String::from("Mapped")).or_insert(0) += 1;
+            *map_stat.entry(String::from("mapped")).or_insert(0) += 1;
         }
-        *map_stat.entry(String::from("Input reads")).or_insert(0) += 1;
+        *map_stat.entry(String::from("input_reads")).or_insert(0) += 1;
     }
     map_stat
 }

@@ -1,12 +1,12 @@
 import json
 import logging
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
 from pathlib import Path
 from typing import Any, Dict, List
 
 import pysam
 
-from statter.json_models.sample_stats import StarStats
+from statter.json_models.sample_stats import BamStats, StarStats
 from statter.parsers.gff_parser import Gene
 from statter.statter import alignment_stats, gene_type_read_dist, star_bam_stats
 
@@ -250,37 +250,12 @@ class BamParser:
         The alignment statistics include the following metrics:
         - Input reads: The total number of reads in the BAM file.
         - Mapped: The number of reads that are mapped to the reference genome.
-        - Mapped %: The percentage of reads that are mapped to the reference genome.
         - Unmapped: The number of reads that are not mapped to the reference genome.
-        - Unmapped %: The percentage of reads that are not mapped to the reference genome.
 
         The alignment statistics are written to the specified output file in JSON format.
         """
         align_stats: dict[str, int] = alignment_stats(self.bam, self.min_q)
-        if len(align_stats) == 0:
-            raise RuntimeError(
-                f"Cannot parse alignment stats from {self.bam}! Check your input file"
-            )
-        map_keys = set(["Input reads", "Mapped", "Unmapped"])
-        diff_keys = map_keys - set(align_stats.keys())
-        if len(diff_keys) > 0:
-            missing_keys = ", ".join(diff_keys)
-            raise RuntimeError(
-                f"Cannot find the following values: {missing_keys} from {self.bam}. Check your input bam file!"
-            )
-        out_stats: OrderedDict[str, int | float] = OrderedDict()
-        out_stats["Input reads"] = align_stats["Input reads"]
-        # Mapped
-        out_stats["Mapped"] = align_stats["Mapped"]
-        out_stats["Mapped %"] = round(
-            align_stats["Mapped"] * 100 / align_stats["Input reads"], 3
-        )
-        # Unmapped
-        out_stats["Unmapped"] = align_stats["Unmapped"]
-        out_stats["Unmapped %"] = round(
-            align_stats["Unmapped"] * 100 / align_stats["Input reads"], 3
-        )
-        self._to_json(out_stats, out_json)
+        self._to_json(BamStats(**align_stats).model_dump(), out_json)
 
     def _unmapped_type(self, ut_type: str) -> str:
         """

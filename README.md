@@ -1,7 +1,7 @@
 
 ## Mad statter
 
-version = "0.5.20"
+version = "0.10.1"
 
 A package to compute read/alignment statistics per fastq/bam file and parsers for niche formats. This will be eventually part of the *seq data analysis workflow. 
 
@@ -9,14 +9,12 @@ A package to compute read/alignment statistics per fastq/bam file and parsers fo
 - [x] Fastq parser
 - [x] GFF parser
 - [x] BAM parser
-- [x] single end unmapped fastq parser
-- [ ] paired end unmapped fastq parser
-- [x] [ganon](https://pirovc.github.io/ganon/) unclassified single end reads parser
 - [x] [kraken2](https://github.com/DerrickWood/kraken2/blob/master/docs/MANUAL.markdown) report aggregator
 - [x] [sourmash tax metagenome][https://sourmash.readthedocs.io/en/latest/classifying-signatures.html) Kraken style report aggregator
 
 - [x] [fastp](https://github.com/OpenGene/fastp) fastp trimming stats aggregator
 - [x] [STAR aligner](https://github.com/alexdobin/STAR) alignment stats to json
+- [x] parser fix UMI position in flexbar fastqs
 
 **Plotting functions**  
 - [x] Fastq read length distribution plot
@@ -42,17 +40,25 @@ $ ls -alh
 ```
 
 ## Scripts
+use ``` statter -h ``` for a list of available helper commands.
 
-- read_length_parser: for a given fastq file, dump read length distribution in json
-- read_length_plotter: generate interactive html plots from fastq read length distributions
-- gene_type_read_length_parser: for a given gff3 file and bam file, dump read length distribution per aligned gene type to json  
-- gene_type_read_length_plotter: generate interactive html plots from bam read length distributions
-- basic_alignment_stats: write basic alignment stats, input reads, mapped reads (count, %) and unmapped reads (count, %)
-- alignment_stats_STAR: write alignment statistics from STAR bam file
-- unmapped_fastq_single_end: split unmapped reads to multimapper unmapped and other unmapped reads
-- ganon_unc_to_fastq: given a ganon classification file and corresponding fastq file, create a new fastq file with all ganon unclassified reads
-- ganon_read_length_plotter: for ganon classification result plot contamination vs unclassified read length distribution
-- ganon_abundance_aggregator: aggregate ganon classification report from multiple samples into a single file
-- fastp_stats_aggregator: aggregate trimming stats after fastp trimming
-- sourmash_report_aggregator: aggregate Kraken style reports from `sourmash tax metagenome -F kreport` output files
+
+For compatibility with existing workflows, the following stand alone scripts are also available:
+
+:warning: This is an incomplete list, kept as a reference. For a complete list of helper commands use ```statter -h```
+
+- `read_length_parser`: for a given fastq file, dump read length distribution in json
+- `read_length_plotter`: generate interactive html plots from fastq read length distributions
+- `gene_type_read_length_parser`: for a given gff3 file and bam file, dump read length distribution per aligned gene type to json  
+- `gene_type_read_length_plotter`: generate interactive html plots from bam read length distributions
+- `basic_alignment_stats`: write basic alignment stats, input reads, mapped reads (count, %) and unmapped reads (count, %)
+- `alignment_stats_STAR`: write alignment statistics from STAR bam file
+- `fastp_stats_aggregator`: aggregate trimming stats after fastp trimming
+- `kraken_report_aggregator`: aggregate Kraken contamination reports
+- `sourmash_report_aggregator`: aggregate Kraken style reports from `sourmash tax metagenome -F kreport` output files
+- **deprecated** : ~~`unmapped_fastq_single_end`: split unmapped reads to multimapper unmapped and other unmapped reads~~ 
+- **deprecated** : ~~`ganon_unc_to_fastq`: given a ganon classification file and corresponding fastq file, create a new fastq file with all ganon unclassified reads~~
+- **deprecated** : ~~`ganon_read_length_plotter`: for ganon classification result plot contamination vs unclassified read length distribution~~
+- **deprecated** : ~~`ganon_abundance_aggregator`: aggregate ganon classification report from multiple samples into a single file~~
+
 

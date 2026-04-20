@@ -1,5 +1,3 @@
-from operator import mul
-
 import click
 
 from statter.parsers.kraken_report_parser import Kraken2
@@ -8,7 +6,15 @@ from statter.parsers.taxonomy_parser import Taxonomy
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
-@click.command(context_settings=CONTEXT_SETTINGS)
+@click.group(context_settings=CONTEXT_SETTINGS)
+@click.version_option()
+def kraken() -> None:
+    """
+    Kraken2 processing utilities
+    """
+
+
+@kraken.command("collect-reports", context_settings=CONTEXT_SETTINGS)
 @click.argument(
     "reports",
     required=False,
@@ -34,7 +40,7 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
     "--kraken_dir",
     "kraken_dir",
     required=False,
-    help="Directory containing Kraken2 classification reports (see kraken2 -h). Either --kraken_dir or --reports MUST be provided",
+    help="Directory containing Kraken2 classification reports (see https://github.com/DerrickWood/kraken2). Either --kraken_dir or reports as space separated arguments MUST be provided",
     type=click.Path(exists=True, file_okay=False, dir_okay=True),
 )
 @click.option(
@@ -61,17 +67,17 @@ def kraken_report_aggregator(
     output_csv: str,
 ):
     """
-    Collect kraken2 reports into a single file
-    \b
+    Collect kraken2 reports into a single file\b
+
     Aggregate Kraken2 species classification report. Given NCBI taxonomy database nodes.dmp file names.dmp file, either a directory with Kraken2 classification results
     or a list of Kraken2 report files, aggregate all classification results into one file. Either --kraken_dir option or kraken reports as space separated arguments must be provided.
     """
     if kraken_dir is None and len(reports) == 0:
-        raise click.UsageError(
+        raise RuntimeError(
             "Either --kraken_dir or kraken reports as space separated arguments must be provided"
         )
     if kraken_dir is not None and len(reports) > 0:
-        raise click.UsageError(
+        raise RuntimeError(
             "Only one of --kraken_dir or kraken reports as space separated arguments should be provided"
         )
     tax = Taxonomy(nodes=nodes, names=names)

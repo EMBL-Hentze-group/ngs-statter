@@ -2,7 +2,8 @@ import logging
 import re
 from itertools import chain, product
 from pathlib import Path
-from typing import List
+from typing import List, Optional
+
 from networkx import DiGraph, dfs_postorder_nodes
 
 """
@@ -16,18 +17,23 @@ class Kraken2:
     def __init__(
         self,
         taxonomy: DiGraph,
-        report_folder: str,
         output_file: str,
-        pattern: str = "_report.txt",
+        report_folder: Optional[str] = None,
+        report_files: Optional[List[str]] = None,
+        pattern: str = "*report.txt",
     ) -> None:
         self.taxonomy = taxonomy
         self.output_file = output_file
         self.pattern = pattern
-        self._kraken_files = sorted(Path(report_folder).glob(pattern))
+        self._kraken_files: List[Path] = []
+        if len(report_files) > 0:  # type: ignore
+            self._kraken_files = sorted([Path(f) for f in report_files])  # type: ignore
+        elif report_folder is not None:
+            self._kraken_files = sorted(Path(report_folder).glob(pattern))
+        else:
+            raise RuntimeError("Either report_folder or report_files must be provided")
         if len(self._kraken_files) == 0:
-            raise RuntimeError(
-                f"Cannot find Kraken2 report files with pattern {pattern} in folder {report_folder}"
-            )
+            raise RuntimeError("Cannot find Kraken2 report files! Check your inputs")
         logger.info(
             f"Found {len(self._kraken_files)} kraken2 report files in {report_folder}"
         )
