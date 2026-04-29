@@ -1,9 +1,9 @@
 [project]
 name = "statter"
-version = "0.10.1"
+version = "0.11.0"
 description = ""
 authors = [
-    {name = "sahadeva",email = "sudeep.sahadevan@embl.de"}
+    {name = "Sudeep Sahadevan",email = "sudeep.sahadevan@embl.de"}
 ]
 license = {text = "MIT"}
 readme = "README.md"
@@ -11,64 +11,82 @@ requires-python = ">=3.12"
 dependencies = [
     "bokeh (>=3.8.0,<4.0.0)",
     "click (>=8.3.0,<9.0.0)",
-    "pandas (>=2.3.3,<3.0.0)",
     "jsonschema (>=4.25.1,<5.0.0)",
     "pydantic (>=2.12.3,<3.0.0)",
     "pysam (>=0.23.3,<0.24.0)",
     "networkx (>=3.5,<4.0)",
     "pyfastx (>=2.2.0,<3.0.0)",
     "rtree (>=1.4.1,<2.0.0)",
-    "matplotlib (>=3.10.8,<4.0.0)",
+    "pandas (==3.0.0)",
+    "pyarrow (==23.0.0)",
     "seaborn (>=0.13.2,<0.14.0)",
+    "matplotlib (>=3.10.8,<4.0.0)",
 ]
 
-[tool.poetry]
-include = [
-    { path = "build/statter.cpython-312-x86_64-linux-gnu.so", format = "wheel" },
-]
+
 
 [project.scripts]
-read_length_parser = "statter.scripts.read_length_stats:read_length_parser"
-read_length_plotter = "statter.scripts.read_length_stats:read_length_plotter"
-alignment_stats_STAR = "statter.scripts.bam_stats:alignment_stats_STAR"
-basic_alignment_stats = "statter.scripts.bam_stats:basic_alignment_stats"
-gene_type_read_length_parser = "statter.scripts.bam_stats:gene_type_read_length_stats"
-gene_type_read_length_plotter = "statter.scripts.bam_stats:gene_type_length_plotter"
-unmapped_fastq_single_end = "statter.scripts.unmapped_splitter:unmapped_fastq_single_end"
-ganon_unc_to_fastq = "statter.scripts.ganon_parser:unclassifed_read_parser"
-ganon_read_length_plotter = "statter.scripts.ganon_parser:ganon_read_length_plotter"
-ganon_abundance_aggregator = "statter.scripts.ganon_parser:ganon_abundance_aggregator"
-kraken_report_aggregator = "statter.scripts.kraken_parser:kraken_report_aggregator"
-sourmash_report_aggregator = "statter.scripts.sourmash_metagenome_parser:sourmash_report_aggregator"
-fastp_stats_aggregator = "statter.scripts.read_length_stats:fastp_stats_aggregator"
-sample_stats = "statter.scripts.all_stats:sample_stats"
-gather_sample_stats = "statter.scripts.all_stats:gather_sample_stats"
-all_stats = "statter.scripts.collect_stats:all_stats"
-compile_stats = "statter.scripts.collect_stats:compile_stats"
-fix_header = "statter.scripts.header_fixer:fix_flexbar_umi_headers"
-statter = "statter.scripts.cli:main"
+read_length_parser = "scripts.read_length_stats:read_length_parser"
+read_length_plotter = "scripts.read_length_stats:read_length_plotter"
+alignment_stats_STAR = "scripts.bam_stats:alignment_stats_STAR"
+basic_alignment_stats = "scripts.bam_stats:basic_alignment_stats"
+gene_type_read_length_parser = "scripts.bam_stats:gene_type_read_length_stats"
+gene_type_read_length_plotter = "scripts.bam_stats:gene_type_length_plotter"
+unmapped_fastq_single_end = "scripts.unmapped_splitter:unmapped_fastq_single_end"
+ganon_unc_to_fastq = "scripts.ganon_parser:unclassifed_read_parser"
+ganon_read_length_plotter = "scripts.ganon_parser:ganon_read_length_plotter"
+ganon_abundance_aggregator = "scripts.ganon_parser:ganon_abundance_aggregator"
+kraken_report_aggregator = "scripts.kraken_parser:kraken_report_aggregator"
+sourmash_report_aggregator = "scripts.sourmash_metagenome_parser:sourmash_report_aggregator"
+fastp_stats_aggregator = "scripts.read_length_stats:fastp_stats_aggregator"
+sample_stats = "scripts.all_stats:sample_stats"
+gather_sample_stats = "scripts.all_stats:gather_sample_stats"
+all_stats = "scripts.collect_stats:all_stats"
+compile_stats = "scripts.collect_stats:compile_stats"
+fix_header = "scripts.header_fixer:fix_flexbar_umi_headers"
+statter = "scripts.cli:main"
 
-[tool.poetry.build]
-script = "build-extension.py"
+[project.optional-dependencies]
+dev = [
+    "pre-commit>=4.6.0",
+]
 
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0", "maturin>=1.4,<2.0"]
-build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.group.build.dependencies]
-maturin = "^1.9.6"
-patchelf = "^0.17.2.4"
-
-
-[tool.poetry.group.dev.dependencies]
-pre-commit = "^4.5.0"
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
 module-name = "statter"
+python-source = "src"
 
-[[tool.poetry_bumpversion.replacements]]
-files = ["Cargo.toml", "README.md"]
-search = 'version = "{current_version}"'
-replace = 'version = "{new_version}"'
+
+
+# [tool.uv]
+# cache-keys = [{ file = "pyproject.toml" }, { file = "src/statter_rs/*.rs" }, { file = "Cargo.toml" }, { file = "Cargo.lock" }]
+
+# [tool.poetry]
+# include = [
+#     { path = "build/statter.cpython-312-x86_64-linux-gnu.so", format = "wheel" },
+# ]
+
+# [tool.poetry.build]
+# script = "build-extension.py"
+
+
+
+# [tool.poetry.group.build.dependencies]
+# maturin = "^1.9.6"
+# patchelf = "^0.17.2.4"
+
+
+# [tool.poetry.group.dev.dependencies]
+# pre-commit = "^4.5.0"
+
+
+
+# [[tool.poetry_bumpversion.replacements]]
+# files = ["Cargo.toml", "README.md"]
+# search = 'version = "{current_version}"'
+# replace = 'version = "{new_version}"'
