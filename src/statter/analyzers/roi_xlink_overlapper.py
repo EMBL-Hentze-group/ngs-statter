@@ -2,7 +2,7 @@ from collections import namedtuple
 from pathlib import Path
 from shutil import rmtree
 from tempfile import mkdtemp
-from typing import Callable, Optional
+from typing import Callable, NamedTuple, Optional
 
 import pandas as pd
 
@@ -24,6 +24,18 @@ class RegionXlinkOverlapFinder:
         norm_method: Optional[str] = "cpm",
         tmpdir: Optional[str | Path] = None,
     ) -> None:
+        """__init__ _summary_
+
+        Args:
+            metadata: (str or Path) path to metadata file (tsv)
+            region: (str or Path) path to region file (bed)
+            l: (int) left extension of the region. Defaults to 100.
+            r: (int) right extension of the region. Defaults to 100.
+            unstranded: (bool) whether to ignore strand information. Defaults to False.
+            most_5prime: (bool) whether to consider the most 5' regions in overlaps. Defaults to False.
+            norm_method: (Optional[str]) normalization method. Defaults to "cpm".
+            tmpdir: (Optional[str or Path]) path to temporary directory. Defaults to None.
+        """
         self.metadata = metadata
         self.region = region
         self.l = l
@@ -67,8 +79,20 @@ class RegionXlinkOverlapFinder:
         # remove temp dir
         rmtree(self._tmp)
 
-    def find_overlaps(self):
+    def find_overlaps(self) -> pd.DataFrame:
+        """find_overlaps
+        Given a data.frame with Regions of Interest and crosslink counts, extend the ROIs in 5' and 3' directions (optionally), count the number of crosslink sites falling into this extended regions
+
+        Raises:
+            ValueError: if no overlaps are found between regions and crosslink sites
+
+        Returns:
+            _description_
+        """
         dfs: list[pd.DataFrame] = []
+        sample_group: pd.DataFrame = self._meta_df[["sample", "group"]].set_index(
+            "sample"
+        )
         for region in self._region_df.itertuples(index=False):
             filters = [
                 ("chrom", "==", region.chrom),
@@ -88,7 +112,7 @@ class RegionXlinkOverlapFinder:
                 range(region.start_extend + 1, region.end_extend + 1, 1)  # type: ignore
             )
             # fill missing positions with 0
-            missing_cols = sorted(all_cols - set(counts.columns))
+            missing_cols = sorted(all_cols - set(counts.columns))  # type: ignore
             if len(missing_cols) > 0:
                 counts = pd.concat(
                     [
@@ -109,12 +133,25 @@ class RegionXlinkOverlapFinder:
                     ],
                     axis=0,
                 ).sort_index()
-                dfs.append(self._format_count_df(counts, region))
+            count_df: pd.DataFrame = self._format_count_df(counts, region).join(
+                sample_group
+            )
+            count_df = count_df.assign(sample=count_df.index).reset_index(drop=True)
+            dfs.append(count_df)
         if len(dfs) == 0:
             raise ValueError("No overlaps found between regions and crosslink sites!")
-        return pd.concat(dfs, axis=0).reset_index(drop=True)
+        return pd.concat(dfs, axis=0, ignore_index=True)
 
-    def _format_count_df(self, counts: pd.DataFrame, region: namedtuple):
+    def _format_count_df(self, counts: pd.DataFrame, region: NamedTuple):
+        """_format_count_df _summary_
+
+        Args:
+            counts: (pd.DataFrame()) DataFrame containing crosslink counts overlapping ROI
+            region: (NamedTuple) a named tuple containing the region information (chrom, start, end, strand, etc.)
+
+        Returns:
+            pd.DataFrame: DataFrame containing the formatted crosslink counts
+        """
         strand_order_fn = self._order_df_fn(region.strand)
         five_prime: pd.DataFrame = strand_order_fn(
             counts.loc[:, region.end + 1 :]
@@ -147,6 +184,15 @@ class RegionXlinkOverlapFinder:
         return pd.concat([five_prime, roi, three_prime], axis=1)
 
     def _order_df_fn(self, strand: str) -> Callable[[pd.DataFrame], pd.DataFrame]:
+        """_order_df_fn Helper function
+        Select function to process crosslink counts in strand specific order
+
+        Args:
+            strand: (str) strand of the region ("+" or "-")
+
+        Returns:
+            Callable[[pd.DataFrame], pd.DataFrame]: function to process crosslink counts in strand specific order
+        """
 
         def _plus_strand_order(df: pd.DataFrame) -> pd.DataFrame:
             return df
