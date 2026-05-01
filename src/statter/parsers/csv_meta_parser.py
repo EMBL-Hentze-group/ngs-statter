@@ -1,7 +1,9 @@
 import logging
 import sys
+from pathlib import Path
 
 import pandas as pd
+from matplotlib import colors
 
 logger = logging.getLogger(__name__)
 
@@ -11,11 +13,12 @@ class MetaReader:
     Check sanity of the supplied yaml file
     """
 
-    def __init__(self, metafile: str) -> None:
+    def __init__(self, metafile: str | Path) -> None:
         # each file must have the following keys
         # name: name to call the sample
         # group: group to which the sample belongs
-        self._req_cols: set[str] = set(["file", "sample", "group"])
+        self._req_cols: set[str] = {"file", "sample", "group"}
+        self.opt_cols: set[str] = {"color"}
         self.metafile = metafile
 
     def read_meta(self) -> pd.DataFrame:
@@ -58,13 +61,13 @@ class MetaReader:
         A compatible metadata file should like the following:
         
         $ cat example_metadata.csv
-        file<\t>sample<\t>group
-        /path/to/input_1_file.bed(.gz)<\t>IP1<\t>IP
-        /path/to/input_2_file.bed<\t>SMI1<\t>SMI
-        /path/to/input_3_file.bed<\t>IP2<\t>IP
+        file<\t>sample<\t>group<\t>color[optional]
+        /path/to/input_1_file.bed(.gz)<\t>IP1<\t>IP<\t>blue
+        /path/to/input_2_file.bed<\t>SMI1<\t>SMI<\t>#FF0000
+        /path/to/input_3_file.bed<\t>IP2<\t>IP<\t>green
 
         FYI: columns should be separated by <tab> character
-            the first line (header) should contain the column names "file", "sample_name" and "group"
+            the first line (header) should contain the column names "file", "sample", "group" and optionally "color"
+            color can either be a color name (e.g. "blue", "red", "green") or a hex code (e.g. "#FF0000")
         """
-        sys.stdout.write(example + "\n")
         sys.stdout.write(example + "\n")
