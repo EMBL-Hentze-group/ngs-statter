@@ -1,6 +1,6 @@
 [project]
 name = "statter"
-version = "1.0.1"
+version = "1.9.14"
 description = ""
 authors = [
     {name = "Sudeep Sahadevan",email = "sudeep.sahadevan@embl.de"}
@@ -17,10 +17,11 @@ dependencies = [
     "networkx (>=3.5,<4.0)",
     "pyfastx (>=2.2.0,<3.0.0)",
     "rtree (>=1.4.1,<2.0.0)",
-    "pandas (==3.0.0)",
-    "pyarrow (==23.0.0)",
+    "pandas[pyarrow]==3.0.0",
     "seaborn (>=0.13.2,<0.14.0)",
     "matplotlib (>=3.10.8,<4.0.0)",
+    "polars[numpy,pandas]>=1.40.1",
+    "scipy>=1.17.1",
 ]
 
 

@@ -2,72 +2,142 @@ import logging
 import sys
 from pathlib import Path
 
-import pandas as pd
+import matplotlib.pyplot as plt
+import polars as pl
 from matplotlib import colors
+from numpy import linspace
 
 logger = logging.getLogger(__name__)
 
 
 class MetaReader:
     """
-    Check sanity of the supplied yaml file
+    Reads and validates a metadata TSV file using polars, enforcing required columns and schema.
     """
 
     def __init__(self, metafile: str | Path) -> None:
-        # each file must have the following keys
-        # name: name to call the sample
-        # group: group to which the sample belongs
-        self._req_cols: set[str] = {"file", "sample", "group"}
-        self.opt_cols: set[str] = {"color"}
-        self.metafile = metafile
+        """__init__
+        Read and validate the metadata file, ensuring required columns are present and colors are valid or generated.
 
-    def read_meta(self) -> pd.DataFrame:
-        """meta_reader read the metadata file and check if it has the required columns
+        Args:
+            metafile: (str | Path) Path to the metadata file
+        """
+        self._req_cols = {"file", "sample", "group"}
+        self._opt_cols = {"color"}
+        self.metafile = metafile
+        # Define the schema for polars (all as string, color is optional)
+        # self.schema = {**self._req_cols, **self._opt_cols}
+        self._metadf = None
+
+    def read_meta(self) -> pl.DataFrame:
+        """
+        Reads the metadata file as a polars DataFrame and checks for required columns.
 
         Raises:
             ValueError: if the metadata file does not have the required columns
         Returns:
-            pd.DataFrame: DataFrame containing the metadata information
+            pl.DataFrame: DataFrame containing the metadata information
         """
-        metadf: pd.DataFrame = pd.read_csv(self.metafile, sep="\t")
-        missing_cols = self._req_cols - set(metadf.columns)
+        # Read with relaxed schema (color is optional)
+        self._metadf = pl.read_csv(
+            self.metafile,
+            separator="\t",
+            has_header=True,
+            # schema=self.schema,
+            ignore_errors=True,
+        )
+        missing_cols = set(self._req_cols) - set(self._metadf.columns)
         if missing_cols:
             raise ValueError(
                 f"Metadata file {self.metafile} is missing required columns: {', '.join(missing_cols)}"
             )
-        return metadf
+        if "color" not in self._metadf.columns:
+            logger.warning(
+                f"Metadata file {self.metafile} is missing colors for either some or all rows. Colors will be generated automatically."
+            )
+            self._generate_colors()
+        else:
+            # validate colors
+            color_check: bool = (
+                self._metadf["color"]
+                .map_elements(
+                    lambda c: colors.is_color_like(c), return_dtype=pl.Boolean
+                )
+                .all()
+            )
+            grp_color = (
+                self._metadf["group"].unique().len()
+                == self._metadf["color"].unique().len()
+            )  # check if number of unique colors matches number of unique groups
+            if (not color_check) or (not grp_color):
+                logger.warning(
+                    f"Metadata file {self.metafile} contains either invalid color values or mismatched number of colors and groups. Colors will be generated automatically."
+                )
+                self._generate_colors()
+            # check how
+        return self._metadf
 
-    def yaml_example(self):
-        example = """
-        A compatible yaml file should like the following:
-        
-        $ cat example.yaml
-        /path/to/input_1_file.bed(.gz): # ":" MUST be there, shoji/htseq-clip "sites" file per sample
-            name: IP1 #  a suitable name for the sample
-            group: IP # group to which sample belongs
-        /path/to/input_2_file.bed: # 
-            name: SMI1 # a suitable name for the sample
-            group: SMI
-        /path/to/input_3_file.bed: # 
-            name: IP2 # a suitable name for the sample
-            group: IP
-        
-        FYI: "name:" and "group:" lines must begin with a single space character.
+    def _generate_colors(self) -> None:
+        """_generate_colors Helper function
+        Generates colors for each unique group in the metadata DataFrame using a colormap.
+        Args:
+            metadf: (pl.DataFrame) DataFrame containing the metadata information
+
+        Returns:
+            pl.DataFrame: DataFrame with generated colors
         """
-        sys.stdout.write(example + "\n")
+        self._metadf = self._metadf.drop("color", strict=False)
+        ncol: int = self._metadf["group"].unique().len()
+        col_df: pl.DataFrame = pl.DataFrame(
+            {
+                "group": self._metadf["group"].unique(),
+                "color": [
+                    colors.to_hex(icol)
+                    for icol in plt.colormaps["viridis"](linspace(0, 1, ncol))
+                ],
+            }
+        )
+        self._metadf = self._metadf.join(col_df, on="group", how="left")
+
+    @property
+    def per_group_colors(self) -> dict[str, str]:
+        """per_group_colors Helper function
+        Get a dictionary mapping each group to its assigned color.
+
+        Returns:
+            dict[str, str]: A dictionary where keys are group names and values are color codes.
+        """
+        if self._metadf is None:
+            raise ValueError("Metadata has not been read yet. Call read_meta() first.")
+        return dict(zip(self._metadf["group"], self._metadf["color"]))
+
+    @property
+    def per_sample_colors(self) -> dict[str, str]:
+        """per_sample_colors Helper function
+        Get a dictionary mapping each sample to its assigned color based on its group.
+
+        Returns:
+            dict[str, str]: A dictionary where keys are sample names and values are color codes.
+        """
+        if self._metadf is None:
+            raise ValueError("Metadata has not been read yet. Call read_meta() first.")
+        return dict(zip(self._metadf["sample"], self._metadf["color"]))
 
     def metadata_example(self) -> None:
         example = """
-        A compatible metadata file should like the following:
+        A compatible metadata file should look like the following:
         
         $ cat example_metadata.csv
         file<\t>sample<\t>group<\t>color[optional]
         /path/to/input_1_file.bed(.gz)<\t>IP1<\t>IP<\t>blue
         /path/to/input_2_file.bed<\t>SMI1<\t>SMI<\t>#FF0000
-        /path/to/input_3_file.bed<\t>IP2<\t>IP<\t>green
+        /path/to/input_3_file.bed<\t>IP2<\t>IP<\t>blue
 
         FYI: columns should be separated by <tab> character
+
             the first line (header) should contain the column names "file", "sample", "group" and optionally "color"
             color can either be a color name (e.g. "blue", "red", "green") or a hex code (e.g. "#FF0000")
+
+            Colors are per group, so if multiple samples belong to the same group, they should have the same color. If colors are not provided or invalid, they will be generated automatically.
         """
         sys.stdout.write(example + "\n")

@@ -1,6 +1,7 @@
-use gene_type_stats::wrapper_compute_gene_type_read_dist;
 use pyo3::prelude::*;
 use std::collections::HashMap;
+// use pyo3_polars::PyDataFrame;
+use gene_type_stats::wrapper_compute_gene_type_read_dist;
 use unmapped::Unmapped;
 mod align_stats;
 mod fastq_stats;
@@ -9,6 +10,8 @@ mod gff_parser;
 mod reader;
 mod star_stats;
 mod unmapped;
+// mod crosslink_parser; // <-- commenting out for now, as it is not fully working yet
+
 /// parse single end bam file and
 /// split unmapped fastqs into two files: (i) all multimappers (ii) other unmapped reads
 /// generate unmapped statistics as json
@@ -65,14 +68,24 @@ fn gene_type_read_dist(
     )
 }
 
+// parse crosslink bed file and generate count data for each crosslink site
+// there is very little advantage over using python polars, but massively increases compile time
+// #[pyfunction]
+// fn crosslink_parser_rs(bed: &str) -> PyResult<PyDataFrame>{
+//     let counts = crosslink_parser::parse_crosslinks(bed)
+//     .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
+//     Ok(pyo3_polars::PyDataFrame(counts))
+// }
+
 /// A Python module implemented in Rust.
 #[pymodule]
-fn statter(_py: Python, m: &PyModule) -> PyResult<()> {
+fn statter(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     // parse unmapped reads from bam files from single end sequencing
     m.add_function(wrap_pyfunction!(single_end_unmapped_fastq, m)?)?;
     m.add_function(wrap_pyfunction!(star_bam_stats, m)?)?;
     m.add_function(wrap_pyfunction!(alignment_stats, m)?)?;
     m.add_function(wrap_pyfunction!(fastq_read_length, m)?)?;
     m.add_function(wrap_pyfunction!(gene_type_read_dist, m)?)?;
+    // m.add_function(wrap_pyfunction!(crosslink_parser_rs, m)?)?;
     Ok(())
 }
