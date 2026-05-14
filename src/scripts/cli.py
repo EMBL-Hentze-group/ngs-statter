@@ -1,8 +1,7 @@
 import click
 
 from statter.clis.bamstat_cli import alignment
-
-# from statter.clis.crosslink_cli import crosslink
+from statter.clis.crosslink_cli import crosslink
 from statter.clis.flexbar_cli import flexbar
 from statter.clis.fq_cli import fastq
 from statter.clis.genetype_cli import genetype
@@ -13,7 +12,7 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
 clis = click.CommandCollection(
-    sources=[flexbar, fastq, alignment, genetype, kraken, sample],
+    sources=[flexbar, fastq, alignment, genetype, kraken, sample, crosslink],
     context_settings=CONTEXT_SETTINGS,
 )
 

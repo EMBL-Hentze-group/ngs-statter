@@ -1,9 +1,167 @@
+import os
+import warnings
+from functools import wraps
+
 import click
 
-from statter.parsers.crosslink.meta_parser import MetaReader
-from statter.plotters.crosslink_plotter import Plotter
+from statter.analyzers.roi_xlink_overlapper import RegionXlinkOverlapFinder
+from statter.parsers.csv_meta_parser import MetaReader
+from statter.plotters.roi_xlink_heatmap import HeatMapper
+from statter.plotters.roi_xlink_line_plotter import LinePlotter
 
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
+
+
+def to_inches(ctx, param, value):
+    if value is None:
+        return None
+    try:
+        return value / 2.54
+    except TypeError:
+        raise click.BadParameter("Value must be a number")
+
+
+def crosslink_options(func):
+    @click.option(
+        "--csv",
+        "csv",
+        required=True,
+        help="CSV file specifying crosslinking site files and sample information (see `statter csv-example`)",
+        type=click.Path(exists=True, file_okay=True, dir_okay=False),
+    )
+    @click.option(
+        "--bed",
+        "bed",
+        required=True,
+        help="BED file specifying secondary structure/ primary motif regions of interests (supports .gz files)",
+        type=click.Path(exists=True, file_okay=True, dir_okay=False),
+    )
+    @click.option(
+        "--out-table",
+        "out_table",
+        required=True,
+        help="Output file to write the aggregated table (always .parquet format)",
+        type=click.Path(exists=False),
+    )
+    @click.option(
+        "--l",
+        "l",
+        default=100,
+        help="5' extension length for regions in BED file",
+        show_default=True,
+        type=click.IntRange(min=0),
+    )
+    @click.option(
+        "--r",
+        "r",
+        default=100,
+        help="3' extension length for regions in BED file",
+        show_default=True,
+        type=click.IntRange(min=0),
+    )
+    @click.option(
+        "--unstranded",
+        "unstranded",
+        is_flag=True,
+        show_default=True,
+        default=False,
+        help="If this flag is set, ignore strand information in the BED file and treat all regions as unstranded",
+    )
+    @click.option(
+        "--most-5prime",
+        "most_5prime",
+        is_flag=True,
+        show_default=True,
+        default=False,
+        help="If bed regions overlap, only keep the most 5' region out of the overlapping regions",
+    )
+    @click.option(
+        "--norm",
+        "norm",
+        default="cpm",
+        help="Normalization method: 'raw' or 'cpm'[Counts per million]",
+        type=click.Choice(["raw", "cpm"]),
+        show_default=True,
+    )
+    @click.option(
+        "--sw",
+        "smoothing_window",
+        help="When plotting smooth crosslink sites using moving average. Use these many adjacent bases to compute moving average",
+        type=click.IntRange(min=1),
+        default=5,
+        show_default=True,
+    )
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+def run_options(func):
+    @click.option(
+        "--tmpdir",
+        "tmpdir",
+        default=None,
+        help="Temporary directory to use (default: system temp folder)",
+        type=click.Path(exists=True, file_okay=False, dir_okay=True),
+        show_default=True,
+    )
+    @click.option(
+        "--threads",
+        "threads",
+        default=4,
+        help="Number of threads to use",
+        type=click.IntRange(min=1),
+        show_default=True,
+    )
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+def fig_options(func):
+    @click.option(
+        "--fig-width",
+        "width",
+        default=30,
+        help="Figure width in centimeters",
+        type=click.FloatRange(min=10),
+        callback=to_inches,
+        show_default=True,
+    )
+    @click.option(
+        "--fig-height",
+        "height",
+        default=27,
+        help="Figure height in centimeters",
+        type=click.FloatRange(min=10),
+        callback=to_inches,
+        show_default=True,
+    )
+    @click.option(
+        "--xlabel",
+        "xlabel",
+        default="Relative crosslink positions",
+        help="X axis label for the plot",
+        type=str,
+        show_default=True,
+    )
+    @click.option(
+        "--ylabel",
+        "ylabel",
+        default="Crosslink counts",
+        help="Y axis label for the plot",
+        type=str,
+        show_default=True,
+    )
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+
+    return wrapper
 
 
 @click.group(context_settings=CONTEXT_SETTINGS)
@@ -14,82 +172,29 @@ def crosslink() -> None:
     """
 
 
-@crosslink.command("yaml-example")
-def yaml_example() -> None:
+@crosslink.command("csv-example")
+def csv_example() -> None:
     """
-    Print example YAML file for crosslink plotting
+    Print example CSV file for crosslink plotting
     """
-    mc = MetaReader()
-    mc.metadata_example()
+    MetaReader.metadata_example()
 
 
-@crosslink.command("plot-crosslinks", context_settings=CONTEXT_SETTINGS)
+@crosslink.command("crosslink-line-plot", context_settings=CONTEXT_SETTINGS)
+@crosslink_options
 @click.option(
-    "--yaml",
-    "yaml",
-    required=True,
-    help="YAML file specifying crosslinking site files and sample information (see `statter yaml-example`)",
-    type=click.Path(exists=True, file_okay=True, dir_okay=False),
-)
-@click.option(
-    "--bed",
-    "bed",
-    required=True,
-    help="BED file specifying secondary structure/ primary motif regions",
-    type=click.Path(exists=True, file_okay=True, dir_okay=False),
-)
-@click.option(
-    "--out",
+    "--out-fig",
     "out",
     required=True,
-    help="Output file to write the plot (pdf/png)",
+    help="Output file to write the plot (svg/pdf/png)",
     type=click.Path(exists=False),
 )
+@fig_options
 @click.option(
-    "--l",
-    "l",
-    default=100,
-    help="5' extension length for regions in BED file",
-    show_default=True,
-    type=click.IntRange(min=0),
-)
-@click.option(
-    "--r",
-    "r",
-    default=100,
-    help="3' extension length for regions in BED file",
-    show_default=True,
-    type=click.IntRange(min=0),
-)
-@click.option(
-    "--norm",
-    "norm",
-    default="cpm",
-    help="Normalization method: 'raw' or 'cpm'[Counts per million]",
-    type=click.Choice(["raw", "cpm"]),
-    show_default=True,
-)
-@click.option(
-    "--sw",
-    "smoothing_window",
-    help="When plotting smooth crosslink sites using moving average. Use these many adjacent bases to compute moving average",
-    type=click.IntRange(min=1),
-    default=5,
-    show_default=True,
-)
-@click.option(
-    "--xlabel",
-    "xlabel",
-    default="Relative crosslink positions",
-    help="X axis label for the plot",
-    type=str,
-    show_default=True,
-)
-@click.option(
-    "--ylabel",
-    "ylabel",
-    default="Crosslink counts",
-    help="Y axis label for the plot",
+    "--title",
+    "title",
+    default="Crosslink profile",
+    help="Title for the plot",
     type=str,
     show_default=True,
 )
@@ -102,66 +207,160 @@ def yaml_example() -> None:
     show_default=True,
 )
 @click.option(
-    "--fig-width",
-    "width",
-    default=30,
-    help="Figure width in centimeters",
-    type=click.IntRange(min=10),
-    show_default=True,
-)
-@click.option(
-    "--fig-height",
-    "height",
-    default=27,
-    help="Figure height in centimeters",
-    type=click.IntRange(min=10),
+    "--show-group-mean",
+    "show_group_mean",
+    is_flag=True,
+    default=False,
+    help="Whether to show group mean in the plot",
     show_default=True,
 )
 @click.option(
     "--errorbar",
     "errorbar",
-    default="sd",
+    default=None,
     help="Error bar to use",
     type=click.Choice(["sd", "ci", "pi", "se", "sd", "None"]),
     show_default=True,
 )
-@click.option(
-    "--tmpdir",
-    "tmpdir",
-    default=None,
-    help="Temporary directory to use (default: system temp folder)",
-    type=click.Path(exists=True, file_okay=False, dir_okay=True),
-    show_default=True,
-)
-def plot_crosslinks(
-    yaml,
+@run_options
+def crosslink_line_plot(
+    csv,
     bed,
     out,
+    out_table,
     l,
     r,
+    most_5prime,
     norm,
+    unstranded,
     smoothing_window,
     xlabel,
     ylabel,
+    title,
     ymax,
     width,
     height,
+    show_group_mean,
     errorbar,
     tmpdir,
+    threads,
 ) -> None:
     """
-    Plot crosslinking sites over secondary structure/primary motif regions
+    Plot crosslinking sites over secondary structure/primary motif regions as line plots.
     """
-    with Plotter(yaml=yaml, region_bed=bed, tmpdir=tmpdir) as pl:
-        pl.aggregate_sites(norm=norm)
-        pl.index_region(l=l, r=r)
-        pl.plot(
-            out_file=out,
-            smoothing_window=smoothing_window,
-            xlabel=xlabel,
-            ylabel=ylabel,
-            width=width,
-            height=height,
-            errorbar=errorbar,
-            ymax=ymax,
+    ncpus: int = os.cpu_count()  # type: ignore
+    if threads > ncpus:
+        warnings.warn(
+            f"Requested {threads} threads, but only {ncpus} CPUs available. Using {max(1, ncpus - 1)} threads."
         )
+        threads = max(1, ncpus - 1)
+    os.environ["POLARS_MAX_THREADS"] = str(threads)
+    with RegionXlinkOverlapFinder(
+        metadata=csv,
+        region=bed,
+        l=l,
+        r=r,
+        unstranded=unstranded,
+        most_5prime=most_5prime,
+        norm_method=norm,
+        smoothing_window=smoothing_window,
+        tmpdir=tmpdir,
+    ) as overlapper:
+        overlapper.find_overlaps(out_path=out_table)
+        region_max_len = overlapper.region_max_len
+    lp = LinePlotter(out_table)
+    lp.plot(
+        output=out,
+        width=width,
+        height=height,
+        ymax=ymax,
+        errorbar=errorbar,
+        roi_length=region_max_len,
+        xlabel=xlabel,
+        ylabel=ylabel,
+        title=title,
+        show_group_mean=show_group_mean,
+    )
+
+
+@crosslink.command("crosslink-heatmap", context_settings=CONTEXT_SETTINGS)
+@crosslink_options
+@click.option(
+    "--out-dir",
+    "out",
+    required=True,
+    help="Output directory for plots. Group specific heatmaps will be written to this directory (svg format)",
+    type=click.Path(exists=False),
+)
+@fig_options
+@click.option(
+    "--vmin",
+    "vmin",
+    default=None,
+    help="Minimum value for crosslink counts on y axis(if not set, determined automatically)",
+    type=click.FloatRange(min=1),
+    show_default=True,
+)
+@click.option(
+    "--vmax",
+    "vmax",
+    default=None,
+    help="Maximum value for crosslink counts on y axis(if not set, determined automatically)",
+    type=click.FloatRange(min=1),
+    show_default=True,
+)
+@run_options
+def crosslink_heatmap(
+    csv,
+    bed,
+    out,
+    out_table,
+    l,
+    r,
+    most_5prime,
+    norm,
+    unstranded,
+    smoothing_window,
+    xlabel,
+    ylabel,
+    vmin,
+    vmax,
+    width,
+    height,
+    tmpdir,
+    threads,
+) -> None:
+    """
+    Plot crosslinking sites over secondary structure/primary motif regions as heatmaps.
+    """
+    ncpus: int = os.cpu_count()  # type: ignore
+    if threads > ncpus:
+        warnings.warn(
+            f"Requested {threads} threads, but only {ncpus} CPUs available. Using {max(1, ncpus - 1)} threads."
+        )
+        threads = max(1, ncpus - 1)
+    os.environ["POLARS_MAX_THREADS"] = str(threads)
+    with RegionXlinkOverlapFinder(
+        metadata=csv,
+        region=bed,
+        l=l,
+        r=r,
+        unstranded=unstranded,
+        most_5prime=most_5prime,
+        norm_method=norm,
+        smoothing_window=smoothing_window,
+        tmpdir=tmpdir,
+    ) as overlapper:
+        overlapper.find_overlaps(out_path=out_table)
+        region_max_len = overlapper.region_max_len
+    hm = HeatMapper(out_table)
+    hm.plot(
+        outdir=out,
+        width=width,
+        height=height,
+        vmin=vmin,
+        vmax=vmax,
+        xlabel=xlabel,
+        ylabel=ylabel,
+        roi_length=region_max_len,
+    )
