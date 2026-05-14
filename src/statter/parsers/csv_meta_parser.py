@@ -22,12 +22,11 @@ class MetaReader:
         Args:
             metafile: (str | Path) Path to the metadata file
         """
-        self._req_cols = {"file", "sample", "group"}
-        self._opt_cols = {"color"}
+        self._req_cols: set[str] = {"file", "sample", "group"}
+        self._opt_cols: set[str] = {"color"}
         self.metafile = metafile
         # Define the schema for polars (all as string, color is optional)
-        # self.schema = {**self._req_cols, **self._opt_cols}
-        self._metadf = None
+        self._metadf: pl.DataFrame = pl.DataFrame()
 
     def read_meta(self) -> pl.DataFrame:
         """
@@ -51,6 +50,14 @@ class MetaReader:
             raise ValueError(
                 f"Metadata file {self.metafile} is missing required columns: {', '.join(missing_cols)}"
             )
+        self._check_colors()
+        # check how
+        return self._metadf
+
+    def _check_colors(self) -> None:
+        """_check_colors Helper function
+        Checks if the metadata DataFrame contains a valid "color" column. If not, generates colors randomly
+        """
         if "color" not in self._metadf.columns:
             logger.warning(
                 f"Metadata file {self.metafile} is missing colors for either some or all rows. Colors will be generated automatically."
@@ -74,8 +81,6 @@ class MetaReader:
                     f"Metadata file {self.metafile} contains either invalid color values or mismatched number of colors and groups. Colors will be generated automatically."
                 )
                 self._generate_colors()
-            # check how
-        return self._metadf
 
     def _generate_colors(self) -> None:
         """_generate_colors Helper function
@@ -123,21 +128,22 @@ class MetaReader:
             raise ValueError("Metadata has not been read yet. Call read_meta() first.")
         return dict(zip(self._metadf["sample"], self._metadf["color"]))
 
-    def metadata_example(self) -> None:
+    @staticmethod
+    def metadata_example() -> None:
         example = """
         A compatible metadata file should look like the following:
         
         $ cat example_metadata.csv
-        file<\t>sample<\t>group<\t>color[optional]
-        /path/to/input_1_file.bed(.gz)<\t>IP1<\t>IP<\t>blue
-        /path/to/input_2_file.bed<\t>SMI1<\t>SMI<\t>#FF0000
-        /path/to/input_3_file.bed<\t>IP2<\t>IP<\t>blue
+        file\tsample\tgroup\tcolor[optional]
+        /path/to/input_1_file.bed(.gz)\tIP1\tIP\tblue
+        /path/to/input_2_file.bed\tSMI1\tSMI\t#FF0000
+        /path/to/input_3_file.bed\tIP2\tIP\tblue
 
         FYI: columns should be separated by <tab> character
 
-            the first line (header) should contain the column names "file", "sample", "group" and optionally "color"
-            color can either be a color name (e.g. "blue", "red", "green") or a hex code (e.g. "#FF0000")
+        the first line (header) should contain the column names "file", "sample", "group" and optionally "color"
+        color can either be a color name (e.g. "blue", "red", "green") or a hex code (e.g. "#FF0000")
 
-            Colors are per group, so if multiple samples belong to the same group, they should have the same color. If colors are not provided or invalid, they will be generated automatically.
+        Colors are per group, so if multiple samples belong to the same group, they should have the same color. If colors are not provided or invalid, they will be generated automatically.
         """
         sys.stdout.write(example + "\n")
