@@ -73,7 +73,6 @@ class LinePlotter:
         ylabel: str = "Crosslink counts",
         title: str = "Crosslink profile",
     ) -> None:
-
         df_melt: pd.DataFrame = (
             self._df.unpivot(
                 self._rel_pos,

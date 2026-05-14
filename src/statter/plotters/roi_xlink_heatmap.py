@@ -76,7 +76,6 @@ class HeatMapper:
         xlabel: str = "Relative position",
         ylabel: str = "Crosslink counts",
     ) -> None:
-
         out_dir = Path(outdir)
         out_dir.mkdir(parents=True, exist_ok=True)
         df: pl.LazyFrame = (
