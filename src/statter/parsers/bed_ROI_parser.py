@@ -1,16 +1,13 @@
 import logging
 from pathlib import Path
+from typing import Generator
 
-import pandas as pd
+import polars as pl
 
 logger = logging.getLogger(__name__)
 
 
 class RegionReader:
-    """
-    Parse given secondary structure/primary motif file
-    extend 5' and 3' regions, return as rtree index
-    """
 
     def __init__(
         self,
@@ -20,182 +17,151 @@ class RegionReader:
         unstranded: bool = False,
         most_5prime: bool = False,
     ) -> None:
-        self._bed = self._read_bed(bed, l, r, unstranded)
-        self.index = {}
+        self._schema = {
+            "chrom": pl.String,
+            "start": pl.UInt32,
+            "end": pl.UInt32,
+            "name": pl.String,
+            "score": pl.Float32,
+            "strand": pl.String,
+        }
+        self._group_cols = ["chrom", "strand"]
+        self._lf = pl.scan_csv(
+            bed,
+            separator="\t",
+            has_header=False,
+            schema=self._schema,
+            comment_prefix="#",
+        )
+        self._check_nulls()
+        self._slop(l, r, unstranded)
         if most_5prime:
-            self._bed = self._5prime_most()
+            self._pick_5prime_most()
+        # renaming to avoid confusion with the "end" column in crosslink
+        # casting to int64 to avoid overflow issues in downstream calculations
+        self._lf = self._lf.rename({"end": "stop"}).cast(
+            {"start": pl.Int64, "stop": pl.Int64}
+        )
+        self._max_length: int = (
+            self._lf.select((pl.col("stop") - pl.col("start")).max()).collect().item()
+        )
 
-    def _read_bed(
-        self, bedf: str | Path, l: int, r: int, unstranded: bool
-    ) -> pd.DataFrame:
-        """_read_bed read BED file and extend regions according to l and r parameters
+    def _check_nulls(self) -> None:
+        """
+        check if any of the required columns contain null values.
+        Raises:
+            ValueError: If any required column contains null values.
+        """
+        non_nulls = (
+            self._lf.select(pl.all().null_count() == 0).collect().to_dicts()[0].values()
+        )
+        if not all(non_nulls):
+            raise ValueError("BED file contains null values in required columns.")
 
+    def _slop(self, l: int, r: int, unstranded: bool) -> None:
+        """_slop Helper function
+        Extend regions in 5' and 3' directions by given lengths l and r.
         Args:
-            bedf: (str) path to BED file
             l: (int) number of bases to extend at the 5' end
             r: (int) number of bases to extend at the 3' end
             unstranded: (bool) whether to ignore strand information
-
-        Raises:
-            ValueError: if the BED file has fewer than 6 columns
-
-        Returns:
-            pd.DataFrame: DataFrame containing the extended BED regions
         """
-        names = ["chrom", "start", "end", "name", "score", "strand"]
-        bed = pd.read_csv(bedf, sep="\t", header=None, names=names)
-        if bed.shape[1] < 6:
-            raise ValueError(f"BED file {bedf} must have at least 6 columns!")
         if unstranded:
-            bed["start_extend"] = (bed["start"] - l).clip(lower=0)
-            bed["end_extend"] = bed["end"] + r
+            self._lf = self._lf.with_columns(
+                [
+                    (pl.col("start") - l).clip(0).alias("start_extend"),
+                    (pl.col("end") + r).alias("end_extend"),
+                ]
+            )
         else:
-            bed["start_extend"] = bed.apply(
-                lambda row: (
-                    max(0, row["start"] - r)
-                    if row["strand"] == "-"
-                    else max(0, row["start"] - l)
-                ),
-                axis=1,
+            self._lf = self._lf.with_columns(
+                [
+                    pl.when(pl.col("strand") == "-")
+                    .then((pl.col("start") - r).clip(0))
+                    .otherwise((pl.col("start") - l).clip(0))
+                    .alias("start_extend"),
+                    pl.when(pl.col("strand") == "-")
+                    .then(pl.col("end") + l)
+                    .otherwise(pl.col("end") + r)
+                    .alias("end_extend"),
+                ]
             )
-            bed["end_extend"] = bed.apply(
-                lambda row: (
-                    row["end"] + l if row["strand"] == "-" else row["end"] + r
-                ),
-                axis=1,
-            )
-        return bed
 
-    def _5prime_most(self) -> pd.DataFrame:
-        """_5prime_most Helper function
-        If the regions after extension overlaps, pick the most 5' region relative to strand out of the overlapping regions
-        Returns:
-            pd.DataFrame: DataFrame containing the selected 5' most regions
+    def _pick_5prime_most(self):
+        """_pick_5prime_most Helper function
+
+        Pick the most 5' regions out of the set of overlapping regions after extension
         """
-        _5pmost: list[pd.DataFrame] = list()
-        chrom_groups = self._bed.groupby(["chrom", "strand"])
-        for (chrom, strand), gdf in chrom_groups:
-            sort_col: str = "start_extend"
-            if strand == "-":
-                sort_col = "end_extend"
-            _5pdf = _pick_5prime_most(
-                gdf,
-                strand=strand,
-                sort_col=sort_col,
-                extended_start_col="start_extend",
-                extended_end_col="end_extend",
+        sort_cols: list[str] = self._group_cols + ["start_extend", "end_extend"]
+        self._lf = (
+            self._lf.sort(sort_cols)
+            .with_columns(
+                [
+                    pl.when(pl.col("strand") == "-")
+                    .then(
+                        pl.col("start_extend")
+                        .cum_max()
+                        .shift(-1)
+                        .over(self._group_cols)
+                    )
+                    .otherwise(
+                        pl.col("end_extend").cum_max().shift(1).over(self._group_cols)
+                    )
+                    .alias("prev_boundary")
+                ]
             )
-            _5pmost.append(_5pdf)
-        return pd.concat(_5pmost)
+            .filter(
+                (pl.col("prev_boundary").is_null())
+                | (
+                    (pl.col("strand") == "+")
+                    & (pl.col("start_extend") >= pl.col("prev_boundary"))
+                )
+                | (
+                    (pl.col("strand") == "-")
+                    & (pl.col("end_extend") <= pl.col("prev_boundary"))
+                )
+            )
+            .drop("prev_boundary")
+        )
 
     @property
-    def regions(self) -> pd.DataFrame:
-        """
-        return the extended regions as a DataFrame
-        """
-        return self._bed
+    def regions(self) -> pl.LazyFrame:
+        return self._lf
 
     @property
-    def max_length(self):
+    def max_length(self) -> int:
         """
-        return maximum length of the regions before extension
+        return the max. length of the ROIs before extension
         """
-        return (self._bed["end"] - self._bed["start"]).max()
+        return self._max_length
 
-    # def extend_index_regions(self):
-    #     freader, mode = SitesToBed._get_parser(self.bed)
-    #     distlist, extended_distlist = list(), list()
-    #     slopper = self._get_slop()
-    #     #  slopped_out = str(self.tmpdir/"struct_l{}_r{}.bed".format(self.l, self.r))
-    #     iids = 0
-    #     with freader(self.bed, mode) as fh:  # , open(slopped_out,'w') as oh :
-    #         for ix, f in enumerate(fh):  # in case name is not unique per entry
-    #             fdat = f.strip().split("\t")
-    #             try:
-    #                 begin = int(fdat[1])
-    #             except ValueError as v:
-    #                 logger.warning(str(v) + " skipping....")
-    #                 continue
-    #             end = int(fdat[2])
-    #             distlist.append(end - begin)
-    #             new_begin, new_end = slopper(begin, end, fdat[-1])
-    #             extended_distlist.append(new_end - new_begin)
-    #             if fdat[5] == "+":
-    #                 strand = (0, 0)
-    #             elif fdat[5] == "-":
-    #                 strand = (1, 1)
-    #             else:
-    #                 strand = (0, 1)
-    #             dat_map = {
-    #                 "name": "{}_{}".format(fdat[3], ix),
-    #                 "strand": fdat[5],
-    #                 "begin": begin,
-    #                 "end": end,
-    #             }
-    #             logger.debug(dat_map)
-    #             try:
-    #                 self.index[fdat[0]].insert(
-    #                     iids, (new_begin, strand[0], new_end, strand[1]), dat_map
-    #                 )
-    #             except KeyError:
-    #                 self.index[fdat[0]] = index.Index()
-    #                 self.index[fdat[0]].insert(
-    #                     iids, (new_begin, strand[0], new_end, strand[1]), dat_map
-    #                 )
-    #             iids += 1
-    #             # oh.write("{}\t{}\t{}\t{}\t{}\t{}\n".format(fdat[0], new_begin, new_end, fdat[3], fdat[4],+ fdat[5]))
-    #     logger.info("{} parsed {} lines, indexed {} regions".format(self.bed, ix, iids))
-    #     return (
-    #         self.index,
-    #         np.array(distlist, dtype=np.float32),
-    #         np.array(extended_distlist, dtype=np.float32),
-    #     )
+    def filter_queries(
+        self, min_gap: int = 50000, batch_size: int = 1000
+    ) -> Generator[pl.DataFrame, None, None]:
+        """filter_queries
+        This function yields batches of regions of interest (ROIs) after extension, where the gap between consecutive ROIs on the same chromosome and strand is at least `min_gap`. The dataframe is yielded in batches of size `batch_size` to manage memory for large datasets.
+        This is used in downstream steps to filter crosslink sites that fall within these ROIs.
+        Args:
+            min_gap: (int) minimum gap between consecutive ROIs. Defaults to 50000.
+            batch_size: (int) number of ROIs to yield per batch. Defaults to 1000.
 
-
-def _pick_5prime_most(
-    gdf: pd.DataFrame,
-    strand: str = "+",
-    sort_col: str = "start_extend",
-    extended_start_col: str = "start_extend",
-    extended_end_col: str = "end_extend",
-) -> pd.DataFrame:
-    """_pick_5prime_most If there are overlapping regions, pick the most 5' region relative to strand
-    Args:
-        gdf: (pd.DataFrame) DataFrame containing the regions to be filtered
-        strand: (str) strand information, either "+" or "-". Defaults to "+".
-        sort_col: (str) column name to sort by to determine 5' most region.
-        extended_start_col: (str) column name for extended start positions. Defaults to "start_extend".
-        extended_end_col: (str) column name for extended end positions. Defaults to "end_extend".
-
-    Returns:
-        pd.DataFrame: DataFrame containing the selected 5' most regions.
-    """
-
-    def plus_strand_check(current, rnext, extended_start_col, extended_end_col):
-        return current[extended_end_col] <= rnext[extended_start_col]
-
-    def minus_strand_check(current, rnext, extended_start_col, extended_end_col):
-        return not (current[extended_start_col] <= rnext[extended_end_col])
-
-    if strand == "-":
-        gdf = gdf.sort_values(sort_col, ascending=False)
-        checkfn = minus_strand_check
-    else:
-        gdf = gdf.sort_values(sort_col, ascending=True)
-        checkfn = plus_strand_check
-    if gdf.shape[0] == 1:
-        return gdf
-    else:
-        selected = list()
-        idf = gdf.iterrows()
-        try:
-            _, current = next(idf)
-            for _, rnext in idf:
-                if checkfn(current, rnext, extended_start_col, extended_end_col):
-                    selected.append(current)
-                    current = rnext
-            selected.append(current)
-        except StopIteration:
-            pass
-        _df = pd.DataFrame(selected)
-        return _df.sort_values(extended_start_col, ascending=True)
+        Yields:
+            pl.DataFrame: A batch of consecutive ROIs.
+        """
+        query: pl.LazyFrame = (
+            self._lf.sort(["chrom", "strand", "end_extend"])
+            .with_columns(gap=pl.col("end_extend").diff().over(["chrom", "strand"]))
+            .with_columns(
+                end_extend=pl.when(pl.col("gap").is_null())
+                .then(pl.col("start_extend"))
+                .otherwise(pl.col("end_extend"))
+            )
+            .filter(pl.col("gap").is_null() | (pl.col("gap") >= min_gap))
+            .with_columns(
+                prev_extend=pl.col("end_extend").shift(1).over(["chrom", "strand"])
+            )
+            .filter(~pl.col("gap").is_null())
+            .select(["chrom", "strand", "prev_extend", "end_extend"])
+        )
+        for batch in query.collect_batches(chunk_size=batch_size):
+            yield batch
