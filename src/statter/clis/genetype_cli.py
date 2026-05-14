@@ -1,6 +1,6 @@
 from typing import List
 
-import click
+import rich_click as click
 
 from statter.parsers.bam_parser import BamParser
 from statter.plotters.gene_type_read_length_distribution import GeneTypePlot

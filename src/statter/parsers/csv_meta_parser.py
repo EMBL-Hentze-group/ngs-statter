@@ -1,11 +1,12 @@
 import logging
-import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import polars as pl
 from matplotlib import colors
 from numpy import linspace
+from rich.console import Console
+from rich.table import Table
 
 logger = logging.getLogger(__name__)
 
@@ -130,20 +131,26 @@ class MetaReader:
 
     @staticmethod
     def metadata_example() -> None:
-        example = """
-        A compatible metadata file should look like the following:
-        
-        $ cat example_metadata.csv
-        file\tsample\tgroup\tcolor[optional]
-        /path/to/input_1_file.bed(.gz)\tIP1\tIP\tblue
-        /path/to/input_2_file.bed\tSMI1\tSMI\t#FF0000
-        /path/to/input_3_file.bed\tIP2\tIP\tblue
+        console = Console()
+        table = Table(title="Example Metadata File")
 
-        FYI: columns should be separated by <tab> character
+        table.add_column("file")
+        table.add_column("sample")
+        table.add_column("group")
+        table.add_column(
+            "color [optional]",
+        )
 
-        the first line (header) should contain the column names "file", "sample", "group" and optionally "color"
-        color can either be a color name (e.g. "blue", "red", "green") or a hex code (e.g. "#FF0000")
+        table.add_row("/path/to/input_1_file.bed(.gz)", "IP1", "IP", "blue")
+        table.add_row("/path/to/input_2_file.bed", "SMI1", "SMI", "#FF0000")
+        table.add_row("/path/to/input_3_file.bed", "IP2", "IP", "blue")
 
-        Colors are per group, so if multiple samples belong to the same group, they should have the same color. If colors are not provided or invalid, they will be generated automatically.
-        """
-        sys.stdout.write(example + "\n")
+        console.print(table)
+        console.print(
+            "[bold]FYI:[/bold] \n"
+            "- columns should be separated by [bold]<tab>[/bold](\\t) character\n"
+            "- The first line (header) should contain the column names 'file', 'sample', 'group' and optionally 'color'.\n\n"
+            "Color can either be a color name (e.g. 'blue', 'red', 'green') or a hex code (e.g. '#FF0000').\n"
+            "Colors are per group, so if multiple samples belong to the same group, they should have the same color. "
+            "If colors are not provided or invalid, they will be generated automatically."
+        )

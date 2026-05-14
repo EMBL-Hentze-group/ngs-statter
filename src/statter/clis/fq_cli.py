@@ -1,4 +1,4 @@
-import click
+import rich_click as click
 
 from statter.parsers.fastq_stats import FqLength
 from statter.plotters.read_length_distribution import ReadLengthPlot

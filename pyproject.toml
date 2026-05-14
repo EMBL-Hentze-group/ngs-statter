@@ -1,6 +1,6 @@
 [project]
 name = "statter"
-version = "1.10.0"
+version = "1.10.1"
 description = ""
 authors = [
     {name = "Sudeep Sahadevan",email = "sudeep.sahadevan@embl.de"}
@@ -10,7 +10,6 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "bokeh (>=3.8.0,<4.0.0)",
-    "click (>=8.3.0,<9.0.0)",
     "jsonschema (>=4.25.1,<5.0.0)",
     "pydantic (>=2.12.3,<3.0.0)",
     "pysam (>=0.23.3,<0.24.0)",
@@ -22,6 +21,7 @@ dependencies = [
     "matplotlib (>=3.10.8,<4.0.0)",
     "polars[numpy,pandas]>=1.40.1",
     "scipy>=1.17.1",
+    "rich-click>=1.9.7",
 ]
 
 

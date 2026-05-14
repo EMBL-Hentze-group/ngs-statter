@@ -1,4 +1,4 @@
-import click
+import rich_click as click
 
 from statter.parsers.kraken_report_parser import Kraken2
 from statter.parsers.taxonomy_parser import Taxonomy
