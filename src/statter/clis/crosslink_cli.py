@@ -2,7 +2,7 @@ import os
 import warnings
 from functools import wraps
 
-import click
+import rich_click as click
 
 from statter.analyzers.roi_xlink_overlapper import RegionXlinkOverlapFinder
 from statter.parsers.csv_meta_parser import MetaReader
@@ -164,7 +164,7 @@ def fig_options(func):
     return wrapper
 
 
-@click.group(context_settings=CONTEXT_SETTINGS)
+@click.group(context_settings=CONTEXT_SETTINGS, no_args_is_help=True)
 @click.version_option()
 def crosslink() -> None:
     """

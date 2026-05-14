@@ -1,4 +1,4 @@
-import click
+import rich_click as click
 
 from statter.parsers.stats_collector import (
     SampleStats,
@@ -8,8 +8,7 @@ from statter.parsers.stats_collector import (
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
-@click.group(context_settings=CONTEXT_SETTINGS)
-@click.version_option()
+@click.group(name="sample", context_settings=CONTEXT_SETTINGS)
 def sample() -> None:
     """Sample level statistics commands."""
 
