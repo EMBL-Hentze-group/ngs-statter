@@ -1206,7 +1206,7 @@ wheels = [
 
 [[package]]
 name = "statter"
-version = "1.9.14"
+version = "1.10.0"
 source = { editable = "." }
 dependencies = [
     { name = "bokeh" },

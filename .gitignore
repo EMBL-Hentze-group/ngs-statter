@@ -17,6 +17,7 @@ examples/
 logs/
 target/
 test_data/
+*.svg
 .idea/
 .Rproj.user/
 .project
