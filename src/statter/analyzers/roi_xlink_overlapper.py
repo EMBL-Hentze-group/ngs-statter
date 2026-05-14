@@ -207,15 +207,15 @@ class RegionXlinkOverlapFinder:
         rmtree(self._tmp)
 
     @property
-    def meta_reader(self) -> MetaReader:
-        return self._meta_reader
+    def region_max_len(self) -> int:
+        return self._region_max_len
 
-    def find_overlaps(self, out_path: Path) -> None:
+    def find_overlaps(self, out_path: str) -> None:
         """find_overlaps
         Find overlaps between the given region(s) of interest and crosslink sites
         write the data to specified output path in parquet format with columns for group, sample and relative position to the region.
         Args:
-            out_path: (Path) Path to the output parquet file.
+            out_path: (str) Path to the output parquet file.
         """
 
         hits: pl.LazyFrame = self._query.with_columns(
@@ -224,7 +224,7 @@ class RegionXlinkOverlapFinder:
         )
         index_path, count_path = self._process_hits(hits)
         # merge index and count files
-        if out_path.exists():
+        if Path(out_path).exists():
             logger.warning(
                 f"Output file {out_path} already exists and will be overwritten."
             )
