@@ -23,6 +23,8 @@ build_whl:
     paths:
       - dist/*.whl
     expire_in: 3 days
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
 
 build_image:
   stage: deploy
@@ -35,3 +37,5 @@ build_image:
   script:
     - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
     - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination ${CI_REGISTRY_IMAGE}:$CI_COMMIT_SHORT_SHA
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
