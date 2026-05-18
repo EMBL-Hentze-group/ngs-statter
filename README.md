@@ -1,8 +1,6 @@
 
 ## Mad statter
 
-version = "0.10.1"
-
 A package to compute read/alignment statistics per fastq/bam file and parsers for niche formats. This will be eventually part of the *seq data analysis workflow. 
 
 **Parsers**  
@@ -21,8 +19,6 @@ A package to compute read/alignment statistics per fastq/bam file and parsers fo
 - [ ] Overall aligned read length distribution plot
 - [x] Gene type specific read length distribution plot
 - [ ] Alignment statistics
-- [x] Motif logos from MMseqs2 clusters
-- [x] Ganon contamination and unclassified read length distribution plot
 
 ## How to pull the container image from this repo
 
@@ -46,19 +42,3 @@ use ``` statter -h ``` for a list of available helper commands.
 For compatibility with existing workflows, the following stand alone scripts are also available:
 
 :warning: This is an incomplete list, kept as a reference. For a complete list of helper commands use ```statter -h```
-
-- `read_length_parser`: for a given fastq file, dump read length distribution in json
-- `read_length_plotter`: generate interactive html plots from fastq read length distributions
-- `gene_type_read_length_parser`: for a given gff3 file and bam file, dump read length distribution per aligned gene type to json  
-- `gene_type_read_length_plotter`: generate interactive html plots from bam read length distributions
-- `basic_alignment_stats`: write basic alignment stats, input reads, mapped reads (count, %) and unmapped reads (count, %)
-- `alignment_stats_STAR`: write alignment statistics from STAR bam file
-- `fastp_stats_aggregator`: aggregate trimming stats after fastp trimming
-- `kraken_report_aggregator`: aggregate Kraken contamination reports
-- `sourmash_report_aggregator`: aggregate Kraken style reports from `sourmash tax metagenome -F kreport` output files
-- **deprecated** : ~~`unmapped_fastq_single_end`: split unmapped reads to multimapper unmapped and other unmapped reads~~ 
-- **deprecated** : ~~`ganon_unc_to_fastq`: given a ganon classification file and corresponding fastq file, create a new fastq file with all ganon unclassified reads~~
-- **deprecated** : ~~`ganon_read_length_plotter`: for ganon classification result plot contamination vs unclassified read length distribution~~
-- **deprecated** : ~~`ganon_abundance_aggregator`: aggregate ganon classification report from multiple samples into a single file~~
-
-
