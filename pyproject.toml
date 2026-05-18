@@ -1,6 +1,6 @@
 [project]
 name = "statter"
-version = "1.11.0"
+version = "1.11.4"
 description = ""
 authors = [
     {name = "Sudeep Sahadevan",email = "sudeep.sahadevan@embl.de"}
@@ -27,25 +27,7 @@ dependencies = [
 
 
 [project.scripts]
-read_length_parser = "scripts.read_length_stats:read_length_parser"
-read_length_plotter = "scripts.read_length_stats:read_length_plotter"
-alignment_stats_STAR = "scripts.bam_stats:alignment_stats_STAR"
-basic_alignment_stats = "scripts.bam_stats:basic_alignment_stats"
-gene_type_read_length_parser = "scripts.bam_stats:gene_type_read_length_stats"
-gene_type_read_length_plotter = "scripts.bam_stats:gene_type_length_plotter"
-unmapped_fastq_single_end = "scripts.unmapped_splitter:unmapped_fastq_single_end"
-ganon_unc_to_fastq = "scripts.ganon_parser:unclassifed_read_parser"
-ganon_read_length_plotter = "scripts.ganon_parser:ganon_read_length_plotter"
-ganon_abundance_aggregator = "scripts.ganon_parser:ganon_abundance_aggregator"
-kraken_report_aggregator = "scripts.kraken_parser:kraken_report_aggregator"
-sourmash_report_aggregator = "scripts.sourmash_metagenome_parser:sourmash_report_aggregator"
-fastp_stats_aggregator = "scripts.read_length_stats:fastp_stats_aggregator"
-sample_stats = "scripts.all_stats:sample_stats"
-gather_sample_stats = "scripts.all_stats:gather_sample_stats"
-all_stats = "scripts.collect_stats:all_stats"
-compile_stats = "scripts.collect_stats:compile_stats"
-fix_header = "scripts.header_fixer:fix_flexbar_umi_headers"
-statter = "scripts.cli:main"
+statter = "statter.scripts.cli:main"
 
 [project.optional-dependencies]
 dev = [
@@ -61,33 +43,3 @@ build-backend = "maturin"
 features = ["pyo3/extension-module"]
 module-name = "statter"
 python-source = "src"
-
-
-
-# [tool.uv]
-# cache-keys = [{ file = "pyproject.toml" }, { file = "src/statter_rs/*.rs" }, { file = "Cargo.toml" }, { file = "Cargo.lock" }]
-
-# [tool.poetry]
-# include = [
-#     { path = "build/statter.cpython-312-x86_64-linux-gnu.so", format = "wheel" },
-# ]
-
-# [tool.poetry.build]
-# script = "build-extension.py"
-
-
-
-# [tool.poetry.group.build.dependencies]
-# maturin = "^1.9.6"
-# patchelf = "^0.17.2.4"
-
-
-# [tool.poetry.group.dev.dependencies]
-# pre-commit = "^4.5.0"
-
-
-
-# [[tool.poetry_bumpversion.replacements]]
-# files = ["Cargo.toml", "README.md"]
-# search = 'version = "{current_version}"'
-# replace = 'version = "{new_version}"'
