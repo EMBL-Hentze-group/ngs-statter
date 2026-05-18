@@ -20,6 +20,11 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 @click.group(name="statter", context_settings=CONTEXT_SETTINGS, no_args_is_help=True)
 @click.version_option(version=version("statter"), prog_name="statter")
 def cli() -> None:
+    """
+    for command specific help, use: **statter *command* -h**
+
+    The list of available commands are shown below grouped by their source.
+    """
     pass
 
 
