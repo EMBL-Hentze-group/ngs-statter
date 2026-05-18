@@ -18,7 +18,7 @@ build_whl:
   <<: *uv_setup
   script:
     - uv build --wheel
-  artefacts:
+  artifacts:
     paths:
       - dist/*.whl
     expire_in: 3 days
