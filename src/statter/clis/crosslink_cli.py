@@ -13,6 +13,9 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
 def to_inches(ctx, param, value):
+    """
+    Convert centimeters to inches for figure dimensions, as matplotlib uses inches for figure size. This callback function is used for the --fig-width and --fig-height options.
+    """
     if value is None:
         return None
     try:
@@ -21,12 +24,34 @@ def to_inches(ctx, param, value):
         raise click.BadParameter("Value must be a number")
 
 
+def set_threads(ctx, param, value):
+    """
+    Validate the number of threads requested by user
+    """
+    ncpus: int = os.cpu_count()  # type: ignore
+    if value > ncpus:
+        warnings.warn(
+            f"Requested {value} threads, but only {ncpus} CPUs available. Using {max(1, ncpus - 1)} threads."
+        )
+        value = max(1, ncpus - 1)
+    return value
+
+
+def normalizer(ctx, param, value):
+    """
+    Normalize the input value. If the value is "none", return None.
+    """
+    if value == "none":
+        return None
+    return value
+
+
 def crosslink_options(func):
     @click.option(
-        "--csv",
+        "--metadata",
         "csv",
         required=True,
-        help="CSV file specifying crosslinking site files and sample information (see `statter csv-example`)",
+        help="CSV metadata file specifying crosslinking site files and sample information (see `statter csv-meta-example`)",
         type=click.Path(exists=True, file_okay=True, dir_okay=False),
     )
     @click.option(
@@ -79,9 +104,10 @@ def crosslink_options(func):
         "--norm",
         "norm",
         default="cpm",
-        help="Normalization method: 'raw' or 'cpm'[Counts per million]",
-        type=click.Choice(["raw", "cpm"]),
+        help="Normalization method: 'none' or 'cpm'[Counts per million]",
+        type=click.Choice(["none", "cpm"]),
         show_default=True,
+        callback=normalizer,
     )
     @click.option(
         "--sw",
@@ -113,6 +139,7 @@ def run_options(func):
         default=4,
         help="Number of threads to use",
         type=click.IntRange(min=1),
+        callback=set_threads,
         show_default=True,
     )
     @wraps(func)
@@ -128,7 +155,7 @@ def fig_options(func):
         "width",
         default=30,
         help="Figure width in centimeters",
-        type=click.FloatRange(min=10),
+        type=click.FloatRange(min=1),
         callback=to_inches,
         show_default=True,
     )
@@ -137,7 +164,7 @@ def fig_options(func):
         "height",
         default=27,
         help="Figure height in centimeters",
-        type=click.FloatRange(min=10),
+        type=click.FloatRange(min=1),
         callback=to_inches,
         show_default=True,
     )
@@ -172,15 +199,53 @@ def crosslink() -> None:
     """
 
 
-@crosslink.command("csv-example")
-def csv_example() -> None:
+@crosslink.command("csv-meta-example")
+def csv_meta_example() -> None:
     """
-    Print example CSV file for crosslink plotting
+    Print example CSV metadata file for crosslink plotting
     """
     MetaReader.metadata_example()
 
 
-@crosslink.command("crosslink-line-plot", context_settings=CONTEXT_SETTINGS)
+@crosslink.command(
+    "count-crosslinks", context_settings=CONTEXT_SETTINGS, no_args_is_help=True
+)
+@crosslink_options
+@run_options
+def count_crosslinks(
+    csv,
+    bed,
+    out_table,
+    l,
+    r,
+    most_5prime,
+    norm,
+    unstranded,
+    smoothing_window,
+    tmpdir,
+    threads,
+) -> None:
+    """
+    Count crosslinking sites over secondary structure/primary motif regions.
+    """
+    os.environ["POLARS_MAX_THREADS"] = str(threads)
+    with RegionXlinkOverlapFinder(
+        metadata=csv,
+        region=bed,
+        l=l,
+        r=r,
+        unstranded=unstranded,
+        most_5prime=most_5prime,
+        norm_method=norm,
+        smoothing_window=smoothing_window,
+        tmpdir=tmpdir,
+    ) as overlapper:
+        overlapper.find_overlaps(out_path=out_table)
+
+
+@crosslink.command(
+    "crosslink-line-plot", context_settings=CONTEXT_SETTINGS, no_args_is_help=True
+)
 @crosslink_options
 @click.option(
     "--out-fig",
@@ -202,8 +267,8 @@ def csv_example() -> None:
     "--ymax",
     "ymax",
     default=None,
-    help="Maximum value for crosslink counts on y axis(if not set, determined automatically)",
-    type=click.IntRange(min=1),
+    help="Maximum value for crosslink counts on y axis (determined from data if not set)",
+    type=click.FloatRange(min=0.0),
     show_default=True,
 )
 @click.option(
@@ -248,12 +313,6 @@ def crosslink_line_plot(
     """
     Plot crosslinking sites over secondary structure/primary motif regions as line plots.
     """
-    ncpus: int = os.cpu_count()  # type: ignore
-    if threads > ncpus:
-        warnings.warn(
-            f"Requested {threads} threads, but only {ncpus} CPUs available. Using {max(1, ncpus - 1)} threads."
-        )
-        threads = max(1, ncpus - 1)
     os.environ["POLARS_MAX_THREADS"] = str(threads)
     with RegionXlinkOverlapFinder(
         metadata=csv,
@@ -283,7 +342,9 @@ def crosslink_line_plot(
     )
 
 
-@crosslink.command("crosslink-heatmap", context_settings=CONTEXT_SETTINGS)
+@crosslink.command(
+    "crosslink-heatmap", context_settings=CONTEXT_SETTINGS, no_args_is_help=True
+)
 @crosslink_options
 @click.option(
     "--out-dir",
@@ -297,16 +358,16 @@ def crosslink_line_plot(
     "--vmin",
     "vmin",
     default=None,
-    help="Minimum value for crosslink counts on y axis(if not set, determined automatically)",
-    type=click.FloatRange(min=1),
+    help="Minimum value for crosslink counts on y axis (determined from data if not set)",
+    type=click.FloatRange(min=0.0),
     show_default=True,
 )
 @click.option(
     "--vmax",
     "vmax",
     default=None,
-    help="Maximum value for crosslink counts on y axis(if not set, determined automatically)",
-    type=click.FloatRange(min=1),
+    help="Maximum value for crosslink counts on y axis (determined from data if not set)",
+    type=click.FloatRange(min=1.0),
     show_default=True,
 )
 @run_options
@@ -333,12 +394,6 @@ def crosslink_heatmap(
     """
     Plot crosslinking sites over secondary structure/primary motif regions as heatmaps.
     """
-    ncpus: int = os.cpu_count()  # type: ignore
-    if threads > ncpus:
-        warnings.warn(
-            f"Requested {threads} threads, but only {ncpus} CPUs available. Using {max(1, ncpus - 1)} threads."
-        )
-        threads = max(1, ncpus - 1)
     os.environ["POLARS_MAX_THREADS"] = str(threads)
     with RegionXlinkOverlapFinder(
         metadata=csv,
