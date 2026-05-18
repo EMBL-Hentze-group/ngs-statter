@@ -1,1 +1,0 @@
-This directory contains modules to deal exclusively with crosslink data
