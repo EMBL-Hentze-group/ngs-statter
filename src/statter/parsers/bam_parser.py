@@ -1,48 +1,14 @@
 import json
 import logging
-from collections import defaultdict
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict
 
-import pysam
+from statter.statter import alignment_stats, gene_type_read_dist, star_bam_stats
 
 from statter.json_models.sample_stats import BamStats, StarStats
-from statter.parsers.gff_parser import Gene
-from statter.statter import alignment_stats, gene_type_read_dist, star_bam_stats
 
 
 class BamParser:
-    """
-    Parse bam file for data.
-
-    Attributes:
-        bam (str): The bam file name. Must be co-ordinate sorted and indexed.
-        min_q (int): Minimum alignment quality. Defaults to 0.
-        ignore_duplicate (bool): Flag to ignore PCR duplicates (if given by `samtools markdup`). Defaults to False.
-
-    Methods:
-        __init__(self, bam: str, min_q: int = 0, ignore_duplicate: bool = False) -> None:
-            Initialize the BamParser object.
-
-        _to_json(stat_data: Any, out_file: str) -> None:
-            Helper function to dump the given data in json format.
-
-        read_length_stats_per_gene_type(self, genes: Dict[str, List[Gene]], out_json: str) -> None:
-            Compute read length stats per gene.
-
-        STAR_alignment_stats(self, out_json: str) -> None:
-            Write STAR alignment stats to json.
-
-        STAR_alignment_stats_rs(self, out_json: str) -> None:
-            Write STAR alignment stats to json using the `star_bam_stats` function.
-
-        alignment_stats(self, out_json: str) -> None:
-            Write alignment stats to json using the `alignment_stats` function.
-
-        _unmapped_type(self, ut_type: str) -> str:
-            Helper function to return STAR unmapped type.
-
-    """
 
     def __init__(
         self, bam: str, min_q: int = 0, ignore_duplicate: bool = False
@@ -86,53 +52,6 @@ class BamParser:
         with open(out_file, "w") as jh:
             json.dump(stat_data, jh, indent=1)
 
-    def read_length_stats_per_gene_type(
-        self, genes: Dict[str, List[Gene]], out_json: str
-    ) -> None:
-        """
-        compute read length stats per gene
-        """
-        gene_read_lens = defaultdict(dict)
-        with pysam.AlignmentFile(
-            self.bam, mode="rb", require_index=True, duplicate_filehandle=True
-        ) as bh:
-            ref_chroms = set(bh.references)
-            common_chroms = ref_chroms & set(genes.keys())
-            if len(common_chroms) == 0:
-                raise RuntimeError(
-                    f"Cannot find any common chromosomes between {self.bam} and given gene data!"
-                )
-            for chrom in common_chroms:
-                for gene in genes[chrom]:
-                    for aln in bh.fetch(contig=chrom, start=gene.start, stop=gene.stop):
-                        if (
-                            aln.is_qcfail
-                            or aln.is_secondary
-                            or aln.is_supplementary
-                            or aln.is_unmapped
-                            or aln.mapping_quality < self.min_q
-                        ) or (self.ignore_duplicate and aln.is_duplicate):
-                            continue
-                        strand = "-" if aln.is_reverse else "+"
-                        if strand != gene.strand:
-                            continue
-                        # status = "dup" if aln.is_duplicate else "non_dup"
-                        # key = (
-                        #     gene.gene_id,
-                        #     gene.name,
-                        #     gene.gene_type,
-                        #     status,
-                        # )
-                        try:
-                            gene_read_lens[gene.gene_type][aln.query_length] += 1
-                        except KeyError:
-                            gene_read_lens[gene.gene_type][aln.query_length] = 1
-        if len(gene_read_lens) == 0:
-            raise RuntimeError(
-                f"Cannot parse data form given bam file: {self.bam}! Check your input GFF3 and Bam file"
-            )
-        self._to_json(gene_read_lens, out_json)
-
     def read_length_stats_per_gene_type_rs(
         self,
         gff3_file: str,
@@ -157,57 +76,6 @@ class BamParser:
                 f"Cannot find reads in {self.bam} aligned to features {features} in {gff3_file}"
             )
         self._to_json(gene_type_dist, out_json)
-
-    def STAR_alignment_stats(self, out_json: str) -> None:
-        """STAR_alignment_stats
-        Parse bam file from STAR aligner for alignment stats
-
-        Args:
-            out_json: json file name to write the alignment stats
-        """
-        with pysam.AlignmentFile(self.bam, "rb") as bh:
-            for aln in bh:
-                if aln.is_paired and not aln.is_read1:
-                    continue
-                if aln.is_unmapped:
-                    self._map_stats["Unmapped: Total"] += 1
-                    self._map_stats["Reads for mapping"] += 1
-                    try:
-                        ut_tag = aln.get_tag("uT")
-                    except KeyError:
-                        logging.warning(
-                            "Cannot find 'uT' tag in the bam file! Check if the bam file was generated using STAR aligner."
-                        )
-                        continue
-                    unmapped_tag = self._unmapped_type(str(ut_tag))
-                    try:
-                        self._map_stats[unmapped_tag] += 1
-                    except KeyError:
-                        self._map_stats[unmapped_tag] = 1
-                    continue
-                if (
-                    aln.is_qcfail
-                    or aln.is_secondary
-                    or aln.is_supplementary
-                    or aln.mapping_quality < self.min_q
-                ):
-                    continue
-                self._map_stats["Reads for mapping"] += 1
-                self._map_stats["Mapped: Total"] += 1
-                if aln.is_duplicate:
-                    self._map_stats["Mapped: PCR duplicate reads"] += 1
-                else:
-                    self._map_stats["Mapped: Unique reads"] += 1
-                try:
-                    n_aln = aln.get_tag("NH")
-                except KeyError:
-                    n_aln = 0
-                    pass
-                if n_aln == 1:
-                    self._map_stats["Mapped: Uniquely mapped reads"] += 1
-                elif n_aln > 1:  # type: ignore
-                    self._map_stats["Mapped: Multimapped reads"] += 1
-        self._to_json(StarStats(**self._map_stats).model_dump(), out_json)
 
     def STAR_alignment_stats_rs(self, out_json: str) -> None:
         """STAR_alignment_stats_rs
