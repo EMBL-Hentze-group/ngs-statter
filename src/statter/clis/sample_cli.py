@@ -13,9 +13,9 @@ def sample() -> None:
     """Sample level statistics commands."""
 
 
-@sample.command("sample-stats", context_settings=CONTEXT_SETTINGS)
+@sample.command("sample-stats", context_settings=CONTEXT_SETTINGS, no_args_is_help=True)
 @click.option(
-    "--sample_name",
+    "--sample-name",
     "-n",
     "sample_name",
     required=True,
@@ -23,7 +23,7 @@ def sample() -> None:
     type=str,
 )
 @click.option(
-    "--raw_reads",
+    "--raw-reads",
     "-r",
     "raw_reads",
     required=True,
@@ -31,7 +31,7 @@ def sample() -> None:
     type=click.Path(exists=True, file_okay=True, dir_okay=False),
 )
 @click.option(
-    "--first_trim",
+    "--first-trim",
     "-f",
     "first_trim",
     required=True,
@@ -39,7 +39,7 @@ def sample() -> None:
     type=click.Path(exists=True, file_okay=True, dir_okay=False),
 )
 @click.option(
-    "--second_trim",
+    "--second-trim",
     "-s",
     "second_trim",
     help="Path to seqkit stats output for second trimming step [Optional]",
@@ -49,7 +49,7 @@ def sample() -> None:
     type=click.Path(exists=True, file_okay=True, dir_okay=False),
 )
 @click.option(
-    "--rRNA_mapped",
+    "--rRNA-mapped",
     "-m",
     "rRNA_mapped",
     help="Path to seqkit stats output for rRNA mapped reads [Optional]",
@@ -59,7 +59,7 @@ def sample() -> None:
     type=click.Path(exists=True, file_okay=True, dir_okay=False),
 )
 @click.option(
-    "--rRNA_free",
+    "--rRNA-free",
     "-u",
     "rRNA_free",
     help="Path to seqkit stats output for rRNA free reads [Optional]",
@@ -69,7 +69,7 @@ def sample() -> None:
     type=click.Path(exists=True, file_okay=True, dir_okay=False),
 )
 @click.option(
-    "--align_stats",
+    "--align-stats",
     "-a",
     "align",
     required=True,
@@ -77,7 +77,7 @@ def sample() -> None:
     type=click.Path(exists=True, file_okay=True, dir_okay=False),
 )
 @click.option(
-    "--dedup_stats",
+    "--dedup-stats",
     "-d",
     "dedup",
     help="Path to bam statistics json file after UMI deduplication [Optional]",
@@ -87,7 +87,7 @@ def sample() -> None:
     type=click.Path(exists=True, file_okay=True, dir_okay=False),
 )
 @click.option(
-    "--kraken2_report",
+    "--kraken2-report",
     "-k",
     "kraken2",
     help="Path to kraken2 report file (see https://github.com/DerrickWood/kraken2) [Optional]",
@@ -117,8 +117,6 @@ def all_stats(
     output,
 ):
     """
-    Collect stats from various steps for a single\b
-
     Collect statistics from various steps in the workflow and compile into a single json file
     """
     stats_collector = SampleStats(
@@ -136,7 +134,9 @@ def all_stats(
     stats_collector.to_json()
 
 
-@sample.command("compile-stats", context_settings=CONTEXT_SETTINGS)
+@sample.command(
+    "compile-stats", context_settings=CONTEXT_SETTINGS, no_args_is_help=True
+)
 @click.option(
     "--output",
     "-o",

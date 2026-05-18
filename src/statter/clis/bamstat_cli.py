@@ -5,7 +5,7 @@ from statter.parsers.bam_parser import BamParser
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
-@click.group(context_settings=CONTEXT_SETTINGS)
+@click.group(context_settings=CONTEXT_SETTINGS, no_args_is_help=True)
 @click.version_option()
 def alignment() -> None:
     """
@@ -13,7 +13,7 @@ def alignment() -> None:
     """
 
 
-@alignment.command("bam", context_settings=CONTEXT_SETTINGS)
+@alignment.command("bam", context_settings=CONTEXT_SETTINGS, no_args_is_help=True)
 @click.option(
     "--bam",
     "bam",
@@ -22,7 +22,7 @@ def alignment() -> None:
     type=click.Path(exists=True, file_okay=True, dir_okay=False),
 )
 @click.option(
-    "--min_q",
+    "--min-q",
     "min_q",
     default=0,
     help="Minimum alignment quality",
@@ -30,7 +30,7 @@ def alignment() -> None:
     type=int,
 )
 @click.option(
-    "--out_json",
+    "--out-json",
     "out_json",
     required=True,
     help="Output file to write json formatted data",
@@ -52,7 +52,7 @@ def basic_alignment_stats(bam: str, min_q: int, out_json: str) -> None:
     bam_parser.alignment_stats_rs(out_json=out_json)
 
 
-@alignment.command("STAR", context_settings=CONTEXT_SETTINGS)
+@alignment.command("STAR", context_settings=CONTEXT_SETTINGS, no_args_is_help=True)
 @click.option(
     "--bam",
     "bam",
@@ -61,7 +61,7 @@ def basic_alignment_stats(bam: str, min_q: int, out_json: str) -> None:
     type=click.Path(exists=True, file_okay=True, dir_okay=False),
 )
 @click.option(
-    "--min_q",
+    "--min-q",
     "min_q",
     default=0,
     help="Minimum alignment quality",
@@ -69,7 +69,7 @@ def basic_alignment_stats(bam: str, min_q: int, out_json: str) -> None:
     type=int,
 )
 @click.option(
-    "--out_json",
+    "--out-json",
     "out_json",
     required=True,
     help="Output file to write json formatted data",
@@ -77,8 +77,6 @@ def basic_alignment_stats(bam: str, min_q: int, out_json: str) -> None:
 )
 def alignment_stats_STAR(bam: str, min_q: int, out_json: str) -> None:
     """
-    Compute alignment statistics for a STAR aligned BAM file\b
-
     Compute alignment statistics for a STAR aligned BAM file and output as JSON.
     """
     bam_parser = BamParser(bam=bam, min_q=min_q, ignore_duplicate=False)

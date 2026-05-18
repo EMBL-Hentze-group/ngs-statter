@@ -14,7 +14,9 @@ def fastq() -> None:
     """
 
 
-@fastq.command("parse-read-length", context_settings=CONTEXT_SETTINGS)
+@fastq.command(
+    "parse-read-length", context_settings=CONTEXT_SETTINGS, no_args_is_help=True
+)
 @click.option("--fq", "fastq", required=True, help="Fastq file (supports .gz files)")
 @click.option(
     "--json", "json", required=True, help="File name for json formatted output file"
@@ -29,7 +31,9 @@ def parse_read_length(fastq: str, json: str) -> None:
     flp.read_length()
 
 
-@fastq.command("plot-read-length", context_settings=CONTEXT_SETTINGS)
+@fastq.command(
+    "plot-read-length", context_settings=CONTEXT_SETTINGS, no_args_is_help=True
+)
 @click.argument(
     "json",
     nargs=-1,
@@ -38,13 +42,13 @@ def parse_read_length(fastq: str, json: str) -> None:
     # help ="List of json formatted read length files (see parse_read_length -h)",
 )
 @click.option(
-    "--json_dir",
+    "--json-dir",
     "json_dir",
     required=False,
-    help="Directory containing json formatted read_length files (see statter parse-read-length -h). Either --json_dir or json formatted files as space separated arguments MUST be provided",
+    help="Directory containing json formatted read_length files (see statter parse-read-length -h). Either --json-dir or json formatted files as space separated arguments MUST be provided",
 )
 @click.option(
-    "--min_read_length",
+    "--min-read-length",
     "min_read_length",
     default=15,
     help="Minimum read length that will be kept",

@@ -16,7 +16,11 @@ def genetype() -> None:
     """
 
 
-@genetype.command("parse-gene-type-read-length", context_settings=CONTEXT_SETTINGS)
+@genetype.command(
+    "parse-gene-type-read-length",
+    context_settings=CONTEXT_SETTINGS,
+    no_args_is_help=True,
+)
 @click.option(
     "--gff3",
     "gff3",
@@ -24,16 +28,16 @@ def genetype() -> None:
     help="Gene annotation in GFF3 format (supports .gz files)",
 )
 @click.option(
-    "--gene_features",
+    "--gene-features",
     "gene_features",
     default=["gene", "tRNA"],
-    help="Features to parse from GFF3 file, MUST be supplied as: '--gene_features gene --gene_features tRNA'...",
+    help="Features to parse from GFF3 file, MUST be supplied as: '--gene-features gene --gene-features tRNA'...",
     multiple=True,
     show_default=True,
     type=str,
 )
 @click.option(
-    "--gene_id",
+    "--gene-id",
     "gene_id",
     default="gene_id",
     help="Gene id attribute in GFF3 attribute column",
@@ -41,7 +45,7 @@ def genetype() -> None:
     type=str,
 )
 @click.option(
-    "--gene_name",
+    "--gene-name",
     "gene_name",
     default="gene_name",
     help="Gene name attribute in GFF3 attribute column",
@@ -49,7 +53,7 @@ def genetype() -> None:
     type=str,
 )
 @click.option(
-    "--gene_type",
+    "--gene-type",
     "gene_type",
     default="gene_type",
     help="Gene type attribute in GFF3 attribute column",
@@ -63,7 +67,7 @@ def genetype() -> None:
     help="Alignments BAM file (MUST be co-ordinate sorted and indexed)",
 )
 @click.option(
-    "--min_q",
+    "--min-q",
     "min_q",
     default=0,
     help="Minimum alignment quality",
@@ -71,7 +75,7 @@ def genetype() -> None:
     type=int,
 )
 @click.option(
-    "--ignore_duplicate",
+    "--ignore-duplicate",
     "ignore_duplicate",
     is_flag=True,
     show_default=True,
@@ -79,7 +83,7 @@ def genetype() -> None:
     help="Flag to ignore PCR duplicate reads (after samtools markdup)",
 )
 @click.option(
-    "--out_json",
+    "--out-json",
     "out_json",
     required=True,
     help="Output file to write json formatted data",
@@ -113,7 +117,11 @@ def gene_type_read_length_stats(
     )
 
 
-@genetype.command("plot-gene-type-read-length", context_settings=CONTEXT_SETTINGS)
+@genetype.command(
+    "plot-gene-type-read-length",
+    context_settings=CONTEXT_SETTINGS,
+    no_args_is_help=True,
+)
 @click.argument(
     "json",
     nargs=-1,
@@ -122,7 +130,7 @@ def gene_type_read_length_stats(
     # help ="List of json formatted read length files (see parse_gene_type_read_length -h)",
 )
 @click.option(
-    "--json_dir",
+    "--json-dir",
     "json_dir",
     required=False,
     help="Directory containing json formatted read length files (see statter parse-gene-type-read-length  -h)",
@@ -151,15 +159,15 @@ def gene_type_length_plotter(
     Plot gene type read length distributions\b
 
     Read in json formatted gene type read length stats and output html plot.
-    Either a directory containing json files (using --json_dir option) or a list of json files as space separated arguments MUST be provided.
+    Either a directory containing json files (using --json-dir option) or a list of json files as space separated arguments MUST be provided.
     """
     if json_dir is None and len(json) == 0:
         raise click.UsageError(
-            "Either --json_dir option or json formatted files as space separated arguments must be provided"
+            "Either --json-dir option or json formatted files as space separated arguments must be provided"
         )
     if json_dir is not None and len(json) > 0:
         raise click.UsageError(
-            "Either --json_dir option or json formatted files as space separated arguments must be provided, not both"
+            "Either --json-dir option or json formatted files as space separated arguments must be provided, not both"
         )
     gtl = GeneTypePlot(
         json_folder=json_dir,

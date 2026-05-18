@@ -14,7 +14,9 @@ def kraken() -> None:
     """
 
 
-@kraken.command("collect-reports", context_settings=CONTEXT_SETTINGS)
+@kraken.command(
+    "collect-reports", context_settings=CONTEXT_SETTINGS, no_args_is_help=True
+)
 @click.argument(
     "reports",
     required=False,
@@ -37,22 +39,22 @@ def kraken() -> None:
     type=click.Path(exists=True, file_okay=True, dir_okay=False),
 )
 @click.option(
-    "--kraken_dir",
+    "--kraken-dir",
     "kraken_dir",
     required=False,
-    help="Directory containing Kraken2 classification reports (see https://github.com/DerrickWood/kraken2). Either --kraken_dir or reports as space separated arguments MUST be provided",
+    help="Directory containing Kraken2 classification reports (see https://github.com/DerrickWood/kraken2). Either --kraken-dir or reports as space separated arguments MUST be provided",
     type=click.Path(exists=True, file_okay=False, dir_okay=True),
 )
 @click.option(
     "--pattern",
     "pattern",
     default="*.txt",
-    help="Kraken report naming pattern. Used only if --kraken_dir is provided",
+    help="Kraken report naming pattern. Used only if --kraken-dir is provided",
     show_default=True,
     type=str,
 )
 @click.option(
-    "--out",
+    "--out-csv",
     "output_csv",
     required=True,
     help="Output csv file name",
@@ -70,15 +72,15 @@ def kraken_report_aggregator(
     Collect kraken2 reports into a single file\b
 
     Aggregate Kraken2 species classification report. Given NCBI taxonomy database nodes.dmp file names.dmp file, either a directory with Kraken2 classification results
-    or a list of Kraken2 report files, aggregate all classification results into one file. Either --kraken_dir option or kraken reports as space separated arguments must be provided.
+    or a list of Kraken2 report files, aggregate all classification results into one file. Either --kraken-dir option or kraken reports as space separated arguments must be provided.
     """
     if kraken_dir is None and len(reports) == 0:
         raise RuntimeError(
-            "Either --kraken_dir or kraken reports as space separated arguments must be provided"
+            "Either --kraken-dir or kraken reports as space separated arguments must be provided"
         )
     if kraken_dir is not None and len(reports) > 0:
         raise RuntimeError(
-            "Only one of --kraken_dir or kraken reports as space separated arguments should be provided"
+            "Only one of --kraken-dir or kraken reports as space separated arguments should be provided"
         )
     tax = Taxonomy(nodes=nodes, names=names)
     taxonomy = tax.build_dag()
