@@ -10,7 +10,6 @@ mod gff_parser;
 mod reader;
 mod star_stats;
 mod unmapped;
-// mod crosslink_parser; // <-- commenting out for now, as it is not fully working yet
 
 /// parse single end bam file and
 /// split unmapped fastqs into two files: (i) all multimappers (ii) other unmapped reads
@@ -68,14 +67,6 @@ fn gene_type_read_dist(
     )
 }
 
-// parse crosslink bed file and generate count data for each crosslink site
-// there is very little advantage over using python polars, but massively increases compile time
-// #[pyfunction]
-// fn crosslink_parser_rs(bed: &str) -> PyResult<PyDataFrame>{
-//     let counts = crosslink_parser::parse_crosslinks(bed)
-//     .map_err(|e| PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e.to_string()))?;
-//     Ok(pyo3_polars::PyDataFrame(counts))
-// }
 
 /// A Python module implemented in Rust.
 #[pymodule]
