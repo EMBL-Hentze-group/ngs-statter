@@ -1,9 +1,9 @@
 [project]
 name = "statter"
 version = "1.12.0"
-description = ""
+description = "A collection of utilities for computing statistics on genomic sequences and alignments."
 authors = [
-    {name = "Sudeep Sahadevan",email = "sudeep.sahadevan@embl.de"}
+    {name = "Sudeep Sahadevan",email = "biohentze@embl.de"}
 ]
 license = {text = "MIT"}
 readme = "README.md"
