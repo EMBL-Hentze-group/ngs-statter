@@ -10,6 +10,7 @@ stages:
       - .cache/pip
       - .cache/uv
   before_script:
+    - apt-get update && apt-get install -y cmake
     - pip install uv
     - uv sync
 
