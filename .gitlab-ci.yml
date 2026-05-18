@@ -1,0 +1,36 @@
+stages:
+  - build
+  - deploy
+
+.uv_setup: &uv_setup
+  image: python:3.12
+  cache:
+    key: "${CI_COMMIT_REF_SLUG}-uv"
+    paths:
+      - .cache/pip
+      - .cache/uv
+  before_script:
+    - pip install uv
+    - uv sync
+
+build_whl:
+  stage: build
+  <<: *uv_setup
+  script:
+    - uv build --wheel
+  artefacts:
+    paths:
+      - dist/*.whl
+    expire_in: 3 days
+
+build_image:
+  stage: deploy
+  needs:
+    - build_whl
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+
+  script:
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination ${CI_REGISTRY_IMAGE}:$CI_COMMIT_SHORT_SHA
