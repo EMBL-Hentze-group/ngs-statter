@@ -1,4 +1,5 @@
 import logging
+from csv import DictReader
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -7,6 +8,8 @@ from matplotlib import colors
 from numpy import linspace
 from rich.console import Console
 from rich.table import Table
+
+from statter.json_models.sample_meta import SampleMeta
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +26,7 @@ class MetaReader:
         Args:
             metafile: (str | Path) Path to the metadata file
         """
-        self._req_cols: set[str] = {"file", "sample", "group"}
-        self._opt_cols: set[str] = {"color"}
+
         self.metafile = metafile
         # Define the schema for polars (all as string, color is optional)
         self._metadf: pl.DataFrame = pl.DataFrame()
@@ -39,49 +41,53 @@ class MetaReader:
             pl.DataFrame: DataFrame containing the metadata information
         """
         # Read with relaxed schema (color is optional)
-        self._metadf = pl.read_csv(
-            self.metafile,
-            separator="\t",
-            has_header=True,
-            # schema=self.schema,
-            ignore_errors=True,
-        )
-        missing_cols = set(self._req_cols) - set(self._metadf.columns)
-        if missing_cols:
-            raise ValueError(
-                f"Metadata file {self.metafile} is missing required columns: {', '.join(missing_cols)}"
+        with open(self.metafile, "r") as fh:
+            reader = DictReader(fh, delimiter="\t")
+            missing = SampleMeta.required_fields() - set(reader.fieldnames)  # type: ignore
+            if missing:
+                raise ValueError(
+                    f"Metadata file {self.metafile} is missing required columns: '{', '.join(missing)}'. Please check the metadata file!"
+                )
+            self._metadf = pl.DataFrame(
+                [SampleMeta.model_validate(row) for row in reader]
             )
+
+        self._check_groups()
+        self._check_samples()
         self._check_colors()
-        # check how
         return self._metadf
+
+    def _check_groups(self) -> None:
+        """
+        Check that samples >= groups
+        """
+        if self._metadf["sample"].unique().len() < self._metadf["group"].unique().len():
+            raise ValueError(
+                f"Metadata file {self.metafile} contains more unique groups than samples. Please check the metadata file and ensure that each sample is assigned to a valid group."
+            )
+
+    def _check_samples(self) -> None:
+        """
+        Check that samples are unique
+        """
+        if self._metadf["sample"].unique().len() != self._metadf.height:
+            raise ValueError(
+                f"Metadata file {self.metafile} contains duplicate sample names. Please check the metadata file and ensure that each sample has a unique name."
+            )
 
     def _check_colors(self) -> None:
         """_check_colors Helper function
         Checks if the metadata DataFrame contains a valid "color" column. If not, generates colors randomly
         """
-        if "color" not in self._metadf.columns:
+        if any(self._metadf["color"].is_null()):
+            self._generate_colors()
+        elif (
+            self._metadf["group"].unique().len() != self._metadf["color"].unique().len()
+        ):
             logger.warning(
-                f"Metadata file {self.metafile} is missing colors for either some or all rows. Colors will be generated automatically."
+                f"Metadata file {self.metafile} contains either invalid color values or mismatched number of colors and groups. Colors will be generated randomly."
             )
             self._generate_colors()
-        else:
-            # validate colors
-            color_check: bool = (
-                self._metadf["color"]
-                .map_elements(
-                    lambda c: colors.is_color_like(c), return_dtype=pl.Boolean
-                )
-                .all()
-            )
-            grp_color = (
-                self._metadf["group"].unique().len()
-                == self._metadf["color"].unique().len()
-            )  # check if number of unique colors matches number of unique groups
-            if (not color_check) or (not grp_color):
-                logger.warning(
-                    f"Metadata file {self.metafile} contains either invalid color values or mismatched number of colors and groups. Colors will be generated automatically."
-                )
-                self._generate_colors()
 
     def _generate_colors(self) -> None:
         """_generate_colors Helper function
@@ -138,7 +144,7 @@ class MetaReader:
         table.add_column("sample")
         table.add_column("group")
         table.add_column(
-            "color [optional]",
+            "color *optional*",
         )
 
         table.add_row("/path/to/input_1_file.bed(.gz)", "IP1", "IP", "blue")
@@ -149,8 +155,24 @@ class MetaReader:
         console.print(
             "[bold]FYI:[/bold] \n"
             "- columns should be separated by [bold]<tab>[/bold](\\t) character\n"
-            "- The first line (header) should contain the column names 'file', 'sample', 'group' and optionally 'color'.\n\n"
+            "- The first line (header) should contain the column names 'file', 'sample', 'group' and optionally 'color'.\n"
+            "- The order of columns does not matter, but the column names are case sensitive.\n\n"
             "Color can either be a color name (e.g. 'blue', 'red', 'green') or a hex code (e.g. '#FF0000').\n"
             "Colors are per group, so if multiple samples belong to the same group, they should have the same color. "
-            "If colors are not provided or invalid, they will be generated automatically."
+            "If colors are not provided or invalid, they will be generated randomly."
         )
+
+
+def main():
+    # meta_path1 = "test_data/crosslinks/soniCLIP_Histone_3UTR_crosslinks_naln_5.csv"
+    # meta_reader1 = MetaReader(meta_path1)
+    # print(meta_reader1.read_meta())
+
+    # meta_path2 = "test_data/crosslinks/jumbled.csv"
+    # meta_reader2 = MetaReader(meta_path2)
+    # print(meta_reader2.read_meta())
+    print(MetaReader.metadata_example())
+
+
+if __name__ == "__main__":
+    main()
