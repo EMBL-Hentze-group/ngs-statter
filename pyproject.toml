@@ -1,6 +1,6 @@
 [project]
 name = "statter"
-version = "1.12.0"
+version = "1.12.2"
 description = "A collection of utilities for computing statistics on genomic sequences and alignments."
 authors = [
     {name = "Sudeep Sahadevan",email = "biohentze@embl.de"}
@@ -22,7 +22,7 @@ dependencies = [
 ]
 
 [project.scripts]
-statter = "statter.scripts.cli:main"
+statter = "statter.scripts.cli:runner"
 
 [project.optional-dependencies]
 dev = [
