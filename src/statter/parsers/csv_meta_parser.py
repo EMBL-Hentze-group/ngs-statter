@@ -161,18 +161,3 @@ class MetaReader:
             "Colors are per group, so if multiple samples belong to the same group, they should have the same color. "
             "If colors are not provided or invalid, they will be generated randomly."
         )
-
-
-def main():
-    # meta_path1 = "test_data/crosslinks/soniCLIP_Histone_3UTR_crosslinks_naln_5.csv"
-    # meta_reader1 = MetaReader(meta_path1)
-    # print(meta_reader1.read_meta())
-
-    # meta_path2 = "test_data/crosslinks/jumbled.csv"
-    # meta_reader2 = MetaReader(meta_path2)
-    # print(meta_reader2.read_meta())
-    print(MetaReader.metadata_example())
-
-
-if __name__ == "__main__":
-    main()
