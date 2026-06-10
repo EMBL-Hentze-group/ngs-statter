@@ -28,7 +28,7 @@ jobs:
         with:
           name: wheels
           path: dist/*.whl
-  
+
   publish-pypi:
     name: publish to PyPI
     needs: release-build
@@ -43,6 +43,6 @@ jobs:
           name: wheels
           path: dist/
       - name: release to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.9
+        uses: pypa/gh-action-pypi-publish@v1.9.0
         with:
           packages-dir: dist/
