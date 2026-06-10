@@ -21,6 +21,8 @@ jobs:
         run: uv python install
       - name: install dependencies
         run: uv sync
+      - name: install maturin
+        run: uv tool install maturin
       - name: build
         run: uv run maturin build --release --out dist
       - name: Upload wheels
