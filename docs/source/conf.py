@@ -25,6 +25,12 @@ extensions = ["sphinx_rtd_theme"]
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
+# Global substitutions available in all RST files.
+rst_epilog = """
+.. |tick| unicode:: U+2713
+.. |cross| unicode:: U+2717
+"""
+
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
