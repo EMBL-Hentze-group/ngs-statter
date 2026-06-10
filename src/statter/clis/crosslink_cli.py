@@ -51,7 +51,7 @@ def crosslink_options(func):
         "--metadata",
         "csv",
         required=True,
-        help="CSV metadata file specifying crosslinking site files and sample information (see `statter csv-meta-example`)",
+        help="CSV metadata file specifying crosslinking site files and sample information (see `ngs-statter csv-meta-example`)",
         type=click.Path(exists=True, file_okay=True, dir_okay=False),
     )
     @click.option(

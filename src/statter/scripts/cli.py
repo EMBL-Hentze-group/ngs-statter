@@ -18,14 +18,14 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
 @click.group(
-    name="statter",
+    name="ngs-statter",
     context_settings=CONTEXT_SETTINGS,
     no_args_is_help=True,
 )
-@click.version_option(version=version("statter"), prog_name="statter")
+@click.version_option(version=version("ngs-statter"), prog_name="ngs-statter")
 def runner() -> None:
     """
-    for command specific help, use: **statter *command* -h**
+    for command specific help, use: **ngs-statter *command* -h**
 
     The list of available commands are shown below grouped by their source.
     """
@@ -34,7 +34,7 @@ def runner() -> None:
 
 sources = [alignment, crosslink, fastq, flexbar, genetype, kraken, sample]
 
-click.rich_click.COMMAND_GROUPS["statter"] = []
+click.rich_click.COMMAND_GROUPS["ngs-statter"] = []
 for source in sources:
     for name, cmd in source.commands.items():
         runner.add_command(cmd, name=name)  # add the command to the main cli group
@@ -42,4 +42,4 @@ for source in sources:
         "name": f"{source.name} commands",
         "commands": list(source.commands.keys()),
     }
-    click.rich_click.COMMAND_GROUPS["statter"].append(group_panel)
+    click.rich_click.COMMAND_GROUPS["ngs-statter"].append(group_panel)

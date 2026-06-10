@@ -1,3 +1,3 @@
 from importlib.metadata import version
 
-__version__ = version("statter")
+__version__ = version("ngs-statter")
