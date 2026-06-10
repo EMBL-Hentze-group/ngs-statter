@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  release-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: setup uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: setup python
+        run: uv python install
+      - name: install dependencies
+        run: uv sync
+      - name: build
+        run: uv run maturin build --release --out dist
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels
+          path: dist/*.whl
