@@ -3,6 +3,8 @@ crosslink
 
 Commands under this group takes crosslinking data (.bed) in bed format, either from Shoji or htseq-clip or other similar tools and a bed formatted Region Of Interest (ROI) file as inputs, calculate the crosslink profile over the regions and flank and plot them either as line plots or heatmaps.
 
+Crosslink count files, in bed format, can be generated using tools like `Shoji`_ or `htseq-clip`_.
+
 .. _csv-ref:
 csv-meta-example
 ^^^^^^^^^^^^^^^^
@@ -136,3 +138,5 @@ Given a region of interest (ROI) file in bed format and a metadata CSV file (see
 
 .. _`.parquet`: https://parquet.apache.org/
 .. _`seaborn errorbar`: https://seaborn.pydata.org/tutorial/error_bars.html
+.. _`Shoji`: https://github.com/EMBL-Hentze-group/Shoji
+.. _`htseq-clip`: https://github.com/EMBL-Hentze-group/htseq-clip
