@@ -21,7 +21,7 @@ build_whl:
   stage: build
   <<: *uv_setup
   script:
-    - uvx maturin build --release --out dist
+    - uv run maturin build --release --out dist
   artifacts:
     paths:
       - dist/*.whl
