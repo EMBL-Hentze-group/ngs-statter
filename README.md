@@ -33,7 +33,7 @@ A detailed documentation is available at [this read the docs page](https://ngs-s
 
 
 ### Commands
-use ``` statter -h ``` for a list of available helper commands.
+use ``` ngs-statter -h ``` for a list of available helper commands.
 
 Commands are grouped based on the input as follows:
 
