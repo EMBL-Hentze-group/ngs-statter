@@ -15,7 +15,7 @@ stages:
     - source "$HOME/.cargo/env"
     - cargo --version
     - pip install uv
-    - uv sync
+    - uv sync --group build
 
 build_whl:
   stage: build
