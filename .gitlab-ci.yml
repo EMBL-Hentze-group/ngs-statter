@@ -18,7 +18,7 @@ build_whl:
   stage: build
   <<: *uv_setup
   script:
-    - uv build --wheel
+    - uvx maturin build --release --out dist
   artifacts:
     paths:
       - dist/*.whl
