@@ -18,7 +18,21 @@ A package to compute read/alignment statistics per fastq/bam files. This package
 - [x] Gene type specific read length distribution plot
 - [ ] Alignment statistics
 
-## Commands
+## Installation
+
+This package can be installed using pip:
+
+```bash
+$ pip install ngs-statter
+```
+
+## Documentation
+
+A detailed documentation is available at [this read the docs page](https://ngs-statter.readthedocs.io/en/latest/index.html). A brief description of various commands available in this package is given below
+
+
+
+### Commands
 use ``` statter -h ``` for a list of available helper commands.
 
 Commands are grouped based on the input as follows:
@@ -76,3 +90,5 @@ Given NCBI taxonomy files and a set of Kraken2 species classification reports, m
 |:----------:|:----------|:----------|
 |sample-stats|Collect statistics from various steps in a workflow (trimming, alignment,...) and compile into a single json file| `ngs-statter sample-stats -h`|
 |compile-stats|Collect stats from multiple samples (output from `sample-stats`) into a single tsv file| `ngs-statter compile-stats -h`|
+
+[Hentze Group](https://www.embl.org/groups/hentze/), EMBL Heidelberg
