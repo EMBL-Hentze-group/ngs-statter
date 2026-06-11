@@ -14,3 +14,12 @@ dependencies
 * polars[numpy,pandas] ``>=1.40.1``
 * scipy ``>=1.17.1``
 * rich-click ``>=1.9.7``
+
+installation
+*****************
+
+The package can be installed using pip:
+
+.. code:: bash
+
+    pip install ngs-statter
