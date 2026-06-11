@@ -11,6 +11,7 @@ stages:
       - .cache/uv
   before_script:
     - apt-get update && apt-get install -y cmake
+    - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
     - pip install uv
     - uv sync
 
