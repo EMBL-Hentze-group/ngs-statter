@@ -7,7 +7,10 @@ on:
 permissions:
   contents: read
 
+# this workflow is disabled,
+# uses the latest glibc version (2.38) on ubuntu-latest, which is not compatible with some distros
 jobs:
+  if: false
   release-build:
     runs-on: ubuntu-latest
     steps:
