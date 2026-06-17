@@ -21,7 +21,6 @@ jobs:
             -   name: build
                 run: |
                     source $HOME/.cargo/env
-                    pip install uv
                     uv sync --group build
                     uv run maturin build --release --out dist
             -   name: Upload wheels
