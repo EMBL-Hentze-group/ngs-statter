@@ -1,16 +1,36 @@
 import logging
 import re
 from pathlib import Path
-from typing import Optional
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import polars as pl
 import seaborn as sns
+from matplotlib import ticker
 from matplotlib.lines import Line2D
+from matplotlib.text import Text
 
 logger = logging.getLogger(__name__)
+
+
+class BoundedMaxNLocator(ticker.Locator):
+    def __init__(self, vmin: int, vmax: int, n_ticks: int = 6):
+        super().__init__()
+        self.vmin = vmin
+        self.vmax = vmax
+        self.min_n_ticks: int = 2 if vmax > 10 else 1
+        # MaxNLocator automatically handles 'nice' steps for any vmax
+        self.base_locator = ticker.MaxNLocator(
+            nbins=n_ticks,
+            steps=[2, 5, 10],
+            prune="both",
+            min_n_ticks=self.min_n_ticks,
+        )
+
+    def __call__(self) -> list[int]:
+        # Temporarily tell the locator the bounds to generate ticks for
+        ticks = self.base_locator.tick_values(self.vmin, self.vmax)
+        return [t for t in ticks if self.vmin <= t <= self.vmax]  # type: ignore
 
 
 class LinePlotter:
@@ -65,13 +85,14 @@ class LinePlotter:
         output: str,
         width: float = 10,
         height: float = 6,
-        ymax: Optional[float] = None,
-        errorbar: Optional[str] = None,
+        ymax: float | None = None,
+        errorbar: str | None = None,
         show_group_mean: bool = False,
-        roi_length: Optional[int] = None,
+        roi_length: int | None = None,
+        labelsize: int = 9,
         xlabel: str = "Relative position",
-        ylabel: str = "Crosslink counts",
-        title: str = "Crosslink profile",
+        ylabel: str = "Counts",
+        title: str = "Profile",
     ) -> None:
         df_melt: pd.DataFrame = (
             self._df.unpivot(
@@ -86,6 +107,8 @@ class LinePlotter:
         )
         # plotting
         fig, ax = plt.subplots(figsize=(width, height))
+        # padding for labels
+        pad = 6
         # per sample
         per_sample = sns.lineplot(
             data=df_melt,
@@ -120,54 +143,82 @@ class LinePlotter:
         xmin = (df_melt["position"].min() // 10 - 1) * 10
         xmax = (df_melt["position"].max() // 10 + 1) * 10
         ax.set_xlim(xmin, xmax)
+        labels: list[int] = self._format_ticks(ax.get_xticklabels(), xmin, xmax)
+        ax.set_xticks(labels)
         if roi_length is not None:
+            if roi_length > 10:
+                ax.xaxis.set_minor_locator(
+                    BoundedMaxNLocator(vmin=0, vmax=roi_length, n_ticks=4)
+                )
+                minor_labelsize: int = labelsize - 1
+                rotation: int = 45
+                minor_pad = pad - 2
+            else:
+                ax.xaxis.set_minor_locator(ticker.FixedLocator([roi_length]))
+                minor_labelsize = labelsize
+                rotation: int = 0
+                minor_pad = pad
+            ax.xaxis.set_minor_formatter(ticker.FormatStrFormatter("%d"))
+            ax.tick_params(
+                which="minor",
+                labelsize=minor_labelsize,
+                rotation=rotation,
+                pad=minor_pad,
+            )
             # custom ticks for ROI region if roi_length is provided
-            main_ticks: list[int] = np.arange(
-                (xmin // 50 + 1) * 50, (xmax // 50 + 1) * 50, 50
-            ).tolist()
-            ticks: list[int] = sorted(main_ticks + self._roi_ticks(roi_length))
             # custom ticks for ROI region
-            ax.set_xticks(ticks)
             # vertical lines to indicate ROI region
             ax.axvline(0, color="black", linestyle="--", linewidth=1, zorder=0)
             ax.axvline(
                 roi_length + 1, color="black", linestyle="--", linewidth=1, zorder=0
             )
+
         # set y limit if provided
         if ymax is not None:
             ax.set_ylim(top=ymax)
         # Labels
+        ax.tick_params(
+            which="major",
+            labelsize=labelsize,
+            pad=pad,
+        )
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         ax.set_title(title)
         # legend
-        lines, labels = self._per_group_legend(self._group_cmap)
-        ax.legend(lines, labels, title=None, loc="upper right", bbox_to_anchor=(1, 1))
+        lines, clabels = self._per_group_legend(self._group_cmap)
+        ax.legend(lines, clabels, title=None, loc="upper right", bbox_to_anchor=(1, 1))
         # save
         if Path(output).exists():
             logger.warning(f"Warning: {output} already exists and will be overwritten.")
         fig.savefig(output, bbox_inches="tight")
         plt.close(fig)
 
-    def _roi_ticks(self, roi_length: int) -> list[int]:
-        """_roi_ticks Helper function
-        Generate x-axis ticks for the ROI plot based on the ROI length. The ticks are generated at regular intervals of 10 bases, with the ROI region (0) in the center.
+    def _format_ticks(self, ticks: list[Text], xmin: int, xmax: int) -> list[int]:
+        """_format_ticks Helper function
+
+        Format x-axis tick labels as integers and filter them based on the specified range.
+
         Args:
-            roi_length: (int) Length of the ROI region.
+            ticks: (list[Text]) List of x-axis tick labels as Text objects.
+            xmin: (int) Minimum x-axis value to include.
+            xmax: (int) Maximum x-axis value to include.
 
         Returns:
-            list[int]: List of x-axis tick positions.
+            list[int]: List of formatted and filtered x-axis tick positions.
         """
-        if roi_length is None:
-            raise ValueError("ROI length must be provided to generate x-axis ticks.")
-        if roi_length < 10:
-            return [roi_length // 2, roi_length]
-        if roi_length < 30:
-            roi_range = roi_length // 2 * 2
-            return np.arange(0, roi_range, 2).tolist()
-        else:
-            roi_range = roi_length // 10 * 10  # round down to nearest 10
-            return np.arange(0, roi_range, 10).tolist()
+        labels: list[int] = []
+        for tick in ticks:
+            tlabel = re.sub(
+                r"[\u2212\u2010\u2011\u2012\u2013\u2014\u2015]",
+                "-",
+                tick.get_text(),
+            )
+            ilabel = int(tlabel)
+            if (ilabel < xmin) or (ilabel > xmax):
+                continue
+            labels.append(ilabel)
+        return labels
 
     def _per_group_legend(self, cmap: dict[str, str]) -> tuple[list[Line2D], list[str]]:
         """

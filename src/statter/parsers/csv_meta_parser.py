@@ -123,6 +123,17 @@ class MetaReader:
             raise ValueError("Metadata has not been read yet. Call read_meta() first.")
         return dict(zip(self._metadf["group"], self._metadf["color"]))
 
+    def per_group_color_lf(self) -> pl.DataFrame:
+        """per_group_color_lf Helper function
+        Get a data frame mapping each group to its assigned color.
+
+        Returns:
+            pl.DataFrame: A data frame with columns 'group' and 'color'.
+        """
+        if self._metadf is None:
+            raise ValueError("Metadata has not been read yet. Call read_meta() first.")
+        return self._metadf.select(["group", "color"]).unique().sort("group")
+
     @property
     def per_sample_colors(self) -> dict[str, str]:
         """per_sample_colors Helper function
@@ -136,7 +147,7 @@ class MetaReader:
         return dict(zip(self._metadf["sample"], self._metadf["color"]))
 
     @staticmethod
-    def metadata_example() -> None:
+    def xlink_example() -> None:
         console = Console()
         table = Table(title="Example Metadata File")
 
@@ -150,6 +161,33 @@ class MetaReader:
         table.add_row("/path/to/input_1_file.bed(.gz)", "IP1", "IP", "blue")
         table.add_row("/path/to/input_2_file.bed", "SMI1", "SMI", "#FF0000")
         table.add_row("/path/to/input_3_file.bed", "IP2", "IP", "blue")
+
+        console.print(table)
+        console.print(
+            "[bold]FYI:[/bold] \n"
+            "- columns should be separated by [bold]<tab>[/bold](\\t) character\n"
+            "- The first line (header) should contain the column names 'file', 'sample', 'group' and optionally 'color'.\n"
+            "- The order of columns does not matter, but the column names are case sensitive.\n\n"
+            "Color can either be a color name (e.g. 'blue', 'red', 'green') or a hex code (e.g. '#FF0000').\n"
+            "Colors are per group, so if multiple samples belong to the same group, they should have the same color. "
+            "If colors are not provided or invalid, they will be generated randomly."
+        )
+
+    @staticmethod
+    def vcf_example() -> None:
+        console = Console()
+        table = Table(title="Example Metadata File")
+
+        table.add_column("file")
+        table.add_column("sample")
+        table.add_column("group")
+        table.add_column(
+            "color *optional*",
+        )
+
+        table.add_row("/path/to/input_1_file.vcf(.gz)", "IP1", "IP", "blue")
+        table.add_row("/path/to/input_2_file.vcf", "SMI1", "SMI", "#FF0000")
+        table.add_row("/path/to/input_3_file.vcf", "IP2", "IP", "blue")
 
         console.print(table)
         console.print(
