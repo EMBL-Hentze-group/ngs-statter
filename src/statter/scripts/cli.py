@@ -9,12 +9,13 @@ from statter.clis.fq_cli import fastq
 from statter.clis.genetype_cli import genetype
 from statter.clis.kraken_cli import kraken
 from statter.clis.sample_cli import sample
+from statter.clis.vcf_cli import vcf
 
 click.rich_click.USE_MARKDOWN = True
 click.rich_click.SHOW_ARGUMENTS = True
 click.rich_click.GROUP_ARGUMENTS_OPTIONS = True
 
-CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
+CONTEXT_SETTINGS = {"help_option_names": ["-h", "--help"]}
 
 
 @click.group(
@@ -29,10 +30,9 @@ def runner() -> None:
 
     The list of available commands are shown below grouped by their source.
     """
-    pass
 
 
-sources = [alignment, crosslink, fastq, flexbar, genetype, kraken, sample]
+sources = [alignment, crosslink, fastq, flexbar, genetype, kraken, sample, vcf]
 
 click.rich_click.COMMAND_GROUPS["ngs-statter"] = []
 for source in sources:
@@ -42,4 +42,4 @@ for source in sources:
         "name": f"{source.name} commands",
         "commands": list(source.commands.keys()),
     }
-    click.rich_click.COMMAND_GROUPS["ngs-statter"].append(group_panel)
+    click.rich_click.COMMAND_GROUPS["ngs-statter"].append(group_panel)  # type: ignore
