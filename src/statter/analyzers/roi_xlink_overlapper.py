@@ -2,7 +2,7 @@ import logging
 import tempfile
 from pathlib import Path
 from shutil import rmtree
-from typing import Optional
+from typing import Optional, Self
 
 import numpy as np
 import pandas as pd
@@ -11,60 +11,88 @@ from scipy.ndimage import convolve1d
 from scipy.sparse import coo_matrix
 
 from statter.parsers.bed_ROI_parser import RegionReader
-from statter.parsers.crosslink_parser import SitesCounter
-from statter.parsers.csv_meta_parser import MetaReader
 
 logger = logging.getLogger(__name__)
 
 
-class RegionXlinkOverlapFinder:
+class RegionSignalOverlapFinder:
 
     def __init__(
         self,
-        metadata: str | Path,
+        signal_dir: str | Path,
+        partition_cols: list[str],
+        group_color: pl.LazyFrame,
         region: str | Path,
+        # mode: str,
         l: int = 100,
         r: int = 100,
         unstranded: bool = False,
         most_5prime: bool = False,
-        smoothing_window: Optional[int] = 0,
-        norm_method: Optional[str] = "cpm",
-        tmpdir: Optional[str | Path] = None,
+        smoothing_window: int = 0,
+        # norm_method: str | None = "cpm",
+        tmpdir: str | Path | None = None,
     ) -> None:
         """__init__ _summary_
 
         Args:
-            metadata: (str or Path) path to metadata file (tsv)
+            signal_dir: (str or Path) path containing partitioned signal files (.parquet format)
+            partition_cols: (list[str]) columns used to partition the signal data for efficient processing.
+            group_color: (pl.LazyFrame) lazy frame containing group-color mapping. Has two columns: 'group' and 'color'.
             region: (str or Path) path to region file (bed)
             l: (int) left extension of the region. Defaults to 100.
             r: (int) right extension of the region. Defaults to 100.
             unstranded: (bool) whether to ignore strand information. Defaults to False.
             most_5prime: (bool) whether to consider the most 5' regions in overlaps. Defaults to False.
-            smoothing_window: (Optional[int]) window size for smoothing. Defaults to 0.
-            norm_method: (Optional[str]) normalization method. Defaults to "cpm".
+            smoothing_window: (int) window size for smoothing. Defaults to 0.
             tmpdir: (Optional[str or Path]) path to temporary directory. Defaults to None.
         """
-        self.metadata = metadata
+        self.signal_dir = signal_dir
         self.region = region
+        self.group_color = group_color
+        self.partition_cols = partition_cols
         self.l = l
         self.r = r
+        # self.mode = mode
         self.unstranded = unstranded
         self.most_5prime = most_5prime
         self.smoothing_window = smoothing_window
-        self.norm_method = norm_method
-        self.tmpdir = tmpdir
-
-    def __enter__(self) -> "RegionXlinkOverlapFinder":
-        # create temp dir
-        if self.tmpdir is None:
-            self._tmp: Path = Path(tempfile.mkdtemp())
-        else:
-            self._tmp = Path(self.tmpdir).resolve()
-            self._tmp.mkdir(exist_ok=True, parents=True)
-            self._tmp = Path(tempfile.mkdtemp(dir=self._tmp))
+        # currently only "cpm" normalization method is supported, for crosslink plot visualization
+        # self.norm_method = norm_method
+        self.tmpdir = self._init_tmpdir(tmpdir)
         # read metadata
-        self._meta_reader: MetaReader = MetaReader(self.metadata)
-        self._meta_df: pl.DataFrame = self._meta_reader.read_meta()
+        # self._meta_reader: MetaReader = MetaReader(self.metadata)
+        # self._meta_df: pl.DataFrame = self._meta_reader.read_meta()
+        # signals
+        # self._signal: AlleleDepthParser | SitesCounter | None = None
+        # use these columns to partition the data for efficient processing
+        # signal parser and partitioning columns are initialized in _get_signal()
+        # self._get_signal()
+
+    def _init_tmpdir(self, tempfolder: str | Path | None) -> Path:
+        """Initialize the temporary directory.
+        Args:
+            tempfolder: (str or Path or None) path to the temporary directory. If None, the system temporary directory is used.
+
+        Returns:
+            Path to the initialized temporary directory.
+        """
+        if tempfolder is None:
+            return Path(tempfile.gettempdir())
+        tmpdir = Path(tempfolder)
+        tmpdir.mkdir(exist_ok=True, parents=True)
+        return tmpdir
+
+    # def _get_signal(self) -> None:
+    #     if self.mode == "allele_depth":
+    #         self._signal = AlleleDepthParser(self._meta_df, self.tmpdir)
+    #         self._by_cols = ["chrom"]
+    #     elif self.mode == "crosslink":
+    #         self._signal = SitesCounter(self._meta_df, self.norm_method, self.tmpdir)
+    #         self._by_cols = ["chrom", "strand"]
+    #     else:
+    #         raise NotImplementedError(f"Unsupported mode: {self.mode}")
+
+    def __enter__(self) -> Self:
         # read and index regions
         region_indexer = RegionReader(
             self.region,
@@ -76,12 +104,9 @@ class RegionXlinkOverlapFinder:
         self._region_max_len: int = region_indexer.max_length
         regions: pl.LazyFrame = region_indexer.regions
         # read and aggregate crosslink sites
-        sites_to_bed = SitesCounter(
-            metadf=self._meta_df, norm_method=self.norm_method, tempfolder=self._tmp
-        )
-        sites: pl.LazyFrame = pl.scan_parquet(
-            sites_to_bed.count_crosslinks(), hive_partitioning=True
-        )
+        # if self._signal is None:
+        #     raise ValueError("Signal parser is not initialized.")
+        sites: pl.LazyFrame = pl.scan_parquet(self.signal_dir, hive_partitioning=True)
         # define enums for chromosome and strand to optimize joins
         chroms = pl.Enum(
             pl.concat(
@@ -125,7 +150,7 @@ class RegionXlinkOverlapFinder:
                 regions,
                 left_on="end",
                 right_on="start_extend",
-                by=["chrom", "strand"],
+                by=self.partition_cols,
                 strategy="backward",
                 tolerance=(self.l + self.r + self._region_max_len),
                 allow_exact_matches=False,
@@ -166,12 +191,12 @@ class RegionXlinkOverlapFinder:
         self._index_cols: list[str] = _pos_cols + _index_cols
         return self
 
-    def _get_tmp_path(self, suffix: Optional[str] = None) -> Path:
+    def _get_tmp_path(self, suffix: str | None) -> Path:
 
         if suffix is None:
-            return self._tmp / f"{next(tempfile._get_candidate_names())}.parquet"  # type: ignore
+            return self.tmpdir / f"{next(tempfile._get_candidate_names())}.parquet"  # type: ignore
 
-        return self._tmp / f"{next(tempfile._get_candidate_names())}_{suffix}.parquet"  # type: ignore
+        return self.tmpdir / f"{next(tempfile._get_candidate_names())}_{suffix}.parquet"  # type: ignore
 
     def _sink_regions(self, regions: pl.LazyFrame) -> Path:
         """_sink_regions Helper function
@@ -204,7 +229,7 @@ class RegionXlinkOverlapFinder:
         return file_path
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:
-        rmtree(self._tmp)
+        rmtree(self.tmpdir)
 
     @property
     def region_max_len(self) -> int:
@@ -269,7 +294,7 @@ class RegionXlinkOverlapFinder:
         # save index columns (group, sample, chrom, start, stop, strand) and add group colors
         index_path = self._get_tmp_path("index")  # type: ignore
         hits.select(self._index_cols + ["row_id"]).unique().join(
-            self._get_group_colors(), on="group", how="left"
+            self.group_color, on="group", how="left"
         ).with_columns(
             pl.col("chrom").cast(pl.String),
             pl.col("strand").cast(pl.String),
@@ -282,16 +307,16 @@ class RegionXlinkOverlapFinder:
         )
         return index_path, sparse_path
 
-    def _get_group_colors(self) -> pl.LazyFrame:
-        """_get_group_colors Helper function
-        Get the colors for each group.
+    # def _get_group_colors(self) -> pl.LazyFrame:
+    #     """_get_group_colors Helper function
+    #     Get the colors for each group.
 
-        Returns:
-            pl.LazyFrame: DataFrame with columns 'group' and 'color'.
-        """
-        groups: list[str] = sorted(self._meta_reader.per_group_colors.keys())
-        colors: list[str] = [self._meta_reader.per_group_colors[g] for g in groups]
-        return pl.DataFrame({"group": groups, "color": colors}).lazy()
+    #     Returns:
+    #         pl.LazyFrame: DataFrame with columns 'group' and 'color'.
+    #     """
+    #     groups: list[str] = sorted(self._meta_reader.per_group_colors.keys())
+    #     colors: list[str] = [self._meta_reader.per_group_colors[g] for g in groups]
+    #     return pl.DataFrame({"group": groups, "color": colors}).lazy()
 
     def _smoother(self, counts, smoothing_window: int) -> np.ndarray:
         """_smoother Helper function

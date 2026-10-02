@@ -1,66 +1,50 @@
 import logging
-import tempfile
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Optional
 
 import polars as pl
+
+from statter.parsers.base_data_parser import BaseDataFrameProcessor
 
 logger = logging.getLogger(__name__)
 
 
-class SitesCounter:
-
+class SitesCounter(BaseDataFrameProcessor):
     def __init__(
         self,
         metadf: pl.DataFrame,
-        norm_method: Optional[str] = None,
-        tempfolder: Optional[str | Path] = None,
+        norm_method: str | None,
+        tempfolder: str | Path | None,
     ) -> None:
-        """__init__
-
-        Args:
-            metadf: (pl.DataFrame) metadata dataframe containing columns 'file', 'sample', and 'group'
-            norm_method: (Optional[str]) normalization method to apply. Defaults to None.
-            tempfolder: (Optional[str | Path]) path to temporary folder. Defaults to None.
-        """
-        self.metadata = metadf
+        super().__init__(metadf, tempfolder=tempfolder)
         self._norm_fn = self._normalizer(norm_method)
-        if tempfolder is None:
-            self._tmpdir = Path(tempfile.gettempdir())
-        else:
-            self._tmpdir = Path(tempfolder)
-            self._tmpdir.mkdir(exist_ok=True, parents=True)
-        # for bed file
-        self._bed_schema: dict[str, pl.DataType] = {  # type: ignore
+
+    @property
+    def _schema(self) -> dict[str, pl.DataType]:
+        return {
             "chrom": pl.String,
             "start": pl.UInt32,
-            "end": pl.Int64,  # to avoid integer overflow during join in the next steps
+            "end": pl.Int64,
             "name": pl.String,
             "score": pl.Float32,
             "strand": pl.String,
-        }
-        self._group_by_cols: list[str] = ["chrom", "end", "strand"]
-        self._partition_cols: list[str] = ["chrom", "strand"]
-        # for filtering
-        self._groups: list[str] = (
-            self.metadata.get_column("group").unique().sort().to_list()
-        )
-        self._samples: list[str] = (
-            self.metadata.get_column("sample").unique().sort().to_list()
-        )
+        }  # type: ignore
+
+    @property
+    def _group_by_cols(self) -> list[str]:
+        return ["chrom", "end", "strand"]
+
+    @property
+    def _partition_cols(self) -> list[str]:
+        return ["chrom", "strand"]
+
+    @property
+    def _rename_cols(self) -> dict[str, str] | None:
+        return None
 
     def _normalizer(
-        self, norm: Optional[str]
+        self, norm: str | None
     ) -> Callable[[pl.LazyFrame, int], pl.LazyFrame]:
-        """_normalizer Helper function
-        Return a normalization function based on the specified normalization method.
-        Args:
-            norm: (Optional[str]) normalization method to apply.
-
-        Returns:
-            Callable[[pl.LazyFrame, int], pl.LazyFrame]: A function that takes a LazyFrame and library size, and returns a normalized LazyFrame.
-        """
-
         def nothing(df: pl.LazyFrame, lib_size: int) -> pl.LazyFrame:
             return df
 
@@ -72,81 +56,29 @@ class SitesCounter:
         norm = norm.lower()
         if norm == "cpm":
             return cpm
-        else:
-            raise NotImplementedError(
-                f"Normalization method {norm} is not implemented."
-            )
+        raise NotImplementedError(f"Normalization method {norm} is not implemented.")
 
-    def count_crosslinks(self) -> Path:
-        """count_crosslinks
-        Aggregate crosslink sites per sample, write to a paritioned parquet file and return file path
-
-        Returns:
-            Path to the partitioned parquet file
-        """
-        pp_df: Path = self._tmpdir / next(tempfile._get_candidate_names())  # type: ignore
-        pp_df.mkdir(exist_ok=True, parents=True)
-        for dat in self.metadata.iter_rows(named=True):
-            logging.info(
-                f"Processing file {dat['file']} for sample {dat['sample']} in group {dat['group']}"
-            )
-            self._xlink_parser(dat["file"], dat["sample"], dat["group"], pp_df)
-        return pp_df
-
-    def _xlink_parser(
-        self, filepath: str, sample: str, group: str, out_folder: Path
-    ) -> None:
-        """_xlink_parser Helper function
-        Parse crosslink sites per sample, aggregate counts, normalize, and write to partitioned parquet directory
-        Args:
-            filepath: (str) path to the input file
-            sample: (str) sample name
-            group: (str) group name
-            out_folder: (Path) path to the output folder
-        """
-        xlinks: pl.LazyFrame = (
+    def _parse_and_transform(
+        self, filepath: str, sample: str, group: str
+    ) -> pl.LazyFrame:
+        xlinks = (
             pl.scan_csv(
                 filepath,
                 has_header=False,
                 separator="\t",
                 comment_prefix="#",
-                schema=self._bed_schema,
+                schema=self._schema,
             )
             .group_by(self._group_by_cols)
             .agg(pl.len().alias("count").cast(pl.Float32))
             .with_columns(
-                [pl.lit(sample).alias("sample"), pl.lit(group).alias("group")]
+                [
+                    pl.lit(sample).alias("sample"),
+                    pl.lit(group).alias("group"),
+                ]
             )
         )
-
-        lib_size: int = xlinks.select(pl.sum("count")).collect().item()
-        xlinks = self._norm_fn(xlinks, lib_size)
-        xlinks.sink_parquet(
-            pl.PartitionBy(
-                base_path=out_folder,
-                file_path_provider=_temp_name_provider,
-                key=self._partition_cols,
-                include_key=False,
-            ),
-            mkdir=True,
-        )
-
-
-def _temp_name_provider(args) -> str:
-    """_temp_name_provider Helper function
-    Generate a temporary file name for partitioned parquet files based on the partition keys.
-    see
-    https://docs.pola.rs/api/python/stable/reference/api/polars.LazyFrame.sink_parquet.html and
-    https://docs.pola.rs/api/python/stable/reference/api/polars.PartitionBy.html#polars.PartitionBy
-    Args:
-        args: Arguments containing partition keys.
-
-    Returns:
-        str: Path to the temporary parquet file.
-    """
-    fps: list[str] = []
-    df = args.partition_keys
-    for col in df.columns:
-        fps.append(f"{col}={df[col][0]}")
-    path = Path().joinpath(*fps) / f"{next(tempfile._get_candidate_names())}.parquet"  # type: ignore
-    return str(path)
+        if self._rename_cols is not None:
+            xlinks = xlinks.rename(self._rename_cols)
+        lib_size = xlinks.select(pl.sum("count")).collect().item()
+        return self._norm_fn(xlinks, lib_size)
