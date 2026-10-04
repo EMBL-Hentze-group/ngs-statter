@@ -33,7 +33,7 @@ class RegionReader:
             schema=self._schema,
             comment_prefix="#",
         )
-        self._check_nulls()
+        self._sanity_check()
         self._slop(l, r, unstranded)
         if most_5prime:
             self._pick_5prime_most()
@@ -46,17 +46,28 @@ class RegionReader:
             self._lf.select((pl.col("stop") - pl.col("start")).max()).collect().item()
         )
 
-    def _check_nulls(self) -> None:
+    def _sanity_check(self) -> None:
         """
         check if any of the required columns contain null values.
         Raises:
             ValueError: If any required column contains null values.
+            ValueError: If any region has non-positive length.
         """
         non_nulls = (
             self._lf.select(pl.all().null_count() == 0).collect().to_dicts()[0].values()
         )
         if not all(non_nulls):
             raise ValueError("BED file contains null values in required columns.")
+        roi_check: pl.Series = (
+            self._lf.with_columns(
+                ((pl.col("end") - pl.col("start")) <= 0).alias("roi_check")
+            )
+            .select("roi_check")
+            .collect()
+            .get_column("roi_check")
+        )
+        if roi_check.any():
+            raise ValueError("BED file contains regions with non-positive length.")
 
     def _slop(self, l: int, r: int, unstranded: bool) -> None:
         """_slop Helper function
