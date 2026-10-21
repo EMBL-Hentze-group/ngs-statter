@@ -1,6 +1,6 @@
 [project]
 name = "NGS-statter"
-version = "1.25.3"
+version = "1.27.0"
 description = "A collection of utilities for computing statistics on genomic sequences and alignments."
 authors = [
     {name = "Sudeep Sahadevan",email = "biohentze@embl.de"}

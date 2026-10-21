@@ -127,7 +127,7 @@ def count_crosslinks(
     "errorbar",
     default=None,
     help="Error bar to use",
-    type=click.Choice(["sd", "ci", "pi", "se", "sd", "None"]),
+    type=click.Choice(["sd", "ci", "pi", "se", "None"]),
     show_default=True,
 )
 @run_options

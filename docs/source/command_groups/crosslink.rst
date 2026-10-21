@@ -5,8 +5,8 @@ Commands under this group takes crosslinking data (.bed) in bed format, either f
 
 Crosslink count files, in bed format, can be generated using tools like `Shoji`_ or `htseq-clip`_.
 
-.. _csv-ref:
-csv-meta-example
+.. _crosslink-csv-ref:
+crosslink-meta-example
 ^^^^^^^^^^^^^^^^
 Print example CSV metadata file for crosslink plotting                                                                                                       
 
@@ -14,14 +14,14 @@ Print example CSV metadata file for crosslink plotting
 
 .. code-block:: bash
 
-    ngs-statter csv-meta-example
+    ngs-statter crosslink-meta-example
 
 A format example and additional descriptions will be printed to the console.
 
 count-crosslinks
 ^^^^^^^^^^^^^^^^
 
-Given a region of interest (ROI) file in bed format and a metadata CSV file (see :ref:`csv-ref`), this command counts the crosslinks that overlap the regions specified in the ROI file.
+Given a region of interest (ROI) file in bed format and a metadata CSV file (see :ref:`crosslink-csv-ref`), this command counts the crosslinks that overlap the regions specified in the ROI file.
 
 **Options**
 
@@ -50,7 +50,7 @@ Given a region of interest (ROI) file in bed format and a metadata CSV file (see
 crosslink-line-plot
 ^^^^^^^^^^^^^^^^
 
-Given a region of interest (ROI) file in bed format and a metadata CSV file (see :ref:`csv-ref`), count the crosslinks that overlap the regions specified in the ROI file, and plot crosslink profiles as line plots.
+Given a region of interest (ROI) file in bed format and a metadata CSV file (see :ref:`crosslink-csv-ref`), count the crosslinks that overlap the regions specified in the ROI file, and plot crosslink profiles as line plots.
 
 **Options**
 
@@ -58,7 +58,7 @@ Given a region of interest (ROI) file in bed format and a metadata CSV file (see
     :widths: 10 70 10 10
     :header: "option", "description", "required", "default value" 
 
-    "--metadata", "CSV metadata file specifying crosslinking site files and sample information (see :ref:`csv-ref`)", "|tick|"
+    "--metadata", "CSV metadata file specifying crosslinking site files and sample information (see :ref:`crosslink-csv-ref`)", "|tick|"
     "--bed", "BED file specifying secondary structure/ primary motif regions of interests (supports .gz files)", "|tick|"
     "--out-table","Output file to write the aggregated table (always `.parquet`_ format)", "|tick|"
     "--l","5' extension length for regions in BED file", "|cross|", "100"
@@ -95,7 +95,7 @@ Given a region of interest (ROI) file in bed format and a metadata CSV file (see
 
 crosslink-heatmap
 ^^^^^^^^^^^^^^^^
-Given a region of interest (ROI) file in bed format and a metadata CSV file (see :ref:`csv-ref`), count the crosslinks that overlap the regions specified in the ROI file, and plot crosslink profiles as heatmaps.
+Given a region of interest (ROI) file in bed format and a metadata CSV file (see :ref:`crosslink-csv-ref`), count the crosslinks that overlap the regions specified in the ROI file, and plot crosslink profiles as heatmaps.
 
 **Options**
 
@@ -103,7 +103,7 @@ Given a region of interest (ROI) file in bed format and a metadata CSV file (see
     :widths: 10 70 10 10
     :header: "option", "description", "required", "default value" 
 
-    "--metadata", "CSV metadata file specifying crosslinking site files and sample information (see :ref:`csv-ref`)", "|tick|"
+    "--metadata", "CSV metadata file specifying crosslinking site files and sample information (see :ref:`crosslink-csv-ref`)", "|tick|"
     "--bed", "BED file specifying secondary structure/ primary motif regions of interests (supports .gz files)", "|tick|"
     "--out-table","Output file to write the aggregated table (always `.parquet`_ format)", "|tick|"
     "--l","5' extension length for regions in BED file", "|cross|", "100"

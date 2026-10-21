@@ -656,7 +656,7 @@ wheels = [
 
 [[package]]
 name = "ngs-statter"
-version = "1.25.3"
+version = "1.27.0"
 source = { editable = "." }
 dependencies = [
     { name = "bokeh" },

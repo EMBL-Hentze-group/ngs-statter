@@ -16,5 +16,6 @@ This section provides an overview of the tools available in NGS statter package.
     command_groups/genetype
     command_groups/kraken
     command_groups/sample
+    command_groups/vcf
 
 

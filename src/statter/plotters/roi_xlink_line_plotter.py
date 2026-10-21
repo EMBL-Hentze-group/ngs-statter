@@ -110,19 +110,20 @@ class LinePlotter:
         # padding for labels
         pad = 6
         # per sample
-        per_sample = sns.lineplot(
-            data=df_melt,
-            x="position",
-            y="count",
-            hue="sample",
-            estimator="mean",
-            errorbar=errorbar,
-            legend=False,
-            alpha=0.40 if show_group_mean else 0.95,
-            palette=self._sample_cmap,
-            zorder=2,
-            ax=ax,
-        )
+        if errorbar is None:
+            per_sample = sns.lineplot(
+                data=df_melt,
+                x="position",
+                y="count",
+                hue="sample",
+                estimator="mean",
+                errorbar=None,
+                legend=False,
+                alpha=0.40 if show_group_mean else 0.95,
+                palette=self._sample_cmap,
+                zorder=2,
+                ax=ax,
+            )
         if show_group_mean:
             # per group mean
             per_group = sns.lineplot(
@@ -131,7 +132,7 @@ class LinePlotter:
                 y="count",
                 hue="group",
                 estimator="mean",
-                errorbar=None,
+                errorbar=errorbar,
                 legend=False,
                 linewidth=3.0,
                 alpha=0.80,
