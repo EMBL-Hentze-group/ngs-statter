@@ -159,10 +159,14 @@ class AlleleDepthParser(BaseDataFrameProcessor):
                 f"Sample in the AD file ({ad_sample[0]}) does not match the sample name from metadata ({sample})!",
                 RuntimeWarning,
             )
+        ad = ad.select(["chrom", "end", "count"]).filter(pl.col("count") != ".")
+        row_count = ad.select(pl.len()).collect().item()
+        if row_count == 0:
+            # No valid entries found, return early. raise warning at the recieving end
+            return ad
         ad = (
-            ad.select(["chrom", "end", "count"])
-            .with_columns(
-                (pl.col("count").str.replace(".", "0").cast(pl.Int64)).alias("count")
+            ad.with_columns(
+                (pl.col("count").str.to_integer(dtype=pl.Int64)).alias("count")
             )
             .group_by(self._group_by_cols)
             .agg(pl.sum("count").alias("count"))
@@ -171,4 +175,5 @@ class AlleleDepthParser(BaseDataFrameProcessor):
                 pl.lit(group).alias("group"),
             )
         )
+
         return ad.with_columns(pl.lit("*").alias("strand"))

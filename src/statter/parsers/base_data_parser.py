@@ -1,8 +1,8 @@
 import logging
 import tempfile
 from abc import ABC, abstractmethod
-from collections.abc import Callable
 from pathlib import Path
+from warnings import warn
 
 import polars as pl
 
@@ -107,6 +107,13 @@ class BaseDataFrameProcessor(ABC):
                 sample=dat["sample"],
                 group=dat["group"],
             )
+            row_count = lf.select(pl.len()).collect().item()
+            if row_count == 0:
+                warn(
+                    f"No valid entries found for sample {dat['sample']} in file {dat['file']}.",
+                    RuntimeWarning,
+                )
+                continue
             lf.sink_parquet(
                 pl.PartitionBy(
                     base_path=out_folder,
